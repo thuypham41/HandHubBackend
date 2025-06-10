@@ -1,5 +1,6 @@
 using HandHubAPI.Application.DTOs;
 using HandHubAPI.Controllers;
+using HandHubAPI.Requests;
 
 namespace HandHubAPI.Application.Features.Interfaces
 {
@@ -10,5 +11,6 @@ namespace HandHubAPI.Application.Features.Interfaces
         Task<UserDto> CreateUserAsync(CreateUserDto createUserDto);
         Task<UserDto> UpdateUserAsync(int userId, UpdateUserDto updateUserDto);
         Task<bool> DeleteUserAsync(int userId);
+        Task<bool> LoginAsync(LoginRequest request);
     }
 }

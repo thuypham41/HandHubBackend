@@ -5,4 +5,5 @@ using HandHubAPI.Domain.Interfaces;
 
 public interface IUserRepository : IBaseRepository<UserEntity>
 {
+    Task<UserEntity?> GetByEmailAsync(string Email);
 }

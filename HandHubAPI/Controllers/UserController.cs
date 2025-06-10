@@ -1,6 +1,7 @@
 using System.Net;
 using HandHubAPI.Application.DTOs;
 using HandHubAPI.Application.Features.Interfaces;
+using HandHubAPI.Requests;
 using Microsoft.AspNetCore.Mvc;
 namespace HandHubAPI.Controllers;
 
@@ -84,23 +85,23 @@ public class UserController : BaseController<UserController>
         }
     }
 
-    // [HttpPost("login")]
-    // public async Task<IActionResult> Login([FromBody] LoginRequest request)
-    // {
-    //     try
-    //     {
-    //         var token = await _userService.LoginAsync(request);
-    //         if (token == null)
-    //         {
-    //             return ErrorResponse("Invalid credentials", HttpStatusCode.Unauthorized);
-    //         }
-    //         return CommonResponse(token, "Login successful");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return ErrorResponse("Failed to login", HttpStatusCode.InternalServerError, ex);
-    //     }
-    // }
+    [HttpPost("login")]
+    public async Task<IActionResult> Login([FromBody] LoginRequest request)
+    {
+        try
+        {
+            var token = await _userService.LoginAsync(request);
+            if (token == null)
+            {
+                return ErrorResponse("Invalid credentials", HttpStatusCode.Unauthorized);
+            }
+            return CommonResponse(token, "Login successful");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to login", HttpStatusCode.InternalServerError, ex);
+        }
+    }
 
     // [HttpPost("signup")]
     // public async Task<IActionResult> Signup([FromBody] SignupRequest request)
