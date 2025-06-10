@@ -103,31 +103,35 @@ public class UserController : BaseController<UserController>
         }
     }
 
-    // [HttpPost("signup")]
-    // public async Task<IActionResult> Signup([FromBody] SignupRequest request)
-    // {
-    //     try
-    //     {
-    //         var user = await _userService.SignupAsync(request);
-    //         return CommonResponse(user, "Signup successful");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return ErrorResponse("Failed to signup", HttpStatusCode.InternalServerError, ex);
-    //     }
-    // }
+    [HttpPost("signup")]
+    public async Task<IActionResult> Signup([FromBody] SignupRequest request)
+    {
+        try
+        {
+            var user = await _userService.SignupAsync(request);
+            if (user == null)
+            {
+                return ErrorResponse("Signup failed", HttpStatusCode.BadRequest);
+            }
+            return CommonResponse(user, "Signup successful");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to signup", HttpStatusCode.InternalServerError, ex);
+        }
+    }
 
-    // [HttpPost("logout")]
-    // public async Task<IActionResult> Logout()
-    // {
-    //     try
-    //     {
-    //         await _userService.LogoutAsync();
-    //         return CommonResponse(null, "Logout successful");
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return ErrorResponse("Failed to logout", HttpStatusCode.InternalServerError, ex);
-    //     }
-    // }
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout()
+    {
+        try
+        {
+            await _userService.LogoutAsync();
+            return CommonResponse(null, "Logout successful");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to logout", HttpStatusCode.InternalServerError, ex);
+        }
+    }
 }
