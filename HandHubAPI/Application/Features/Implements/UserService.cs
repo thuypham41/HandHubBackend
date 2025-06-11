@@ -106,7 +106,7 @@ public class UserService : IUserService
         var email = _unitOfWork.UserRepository.GetByEmailAsync(request.Email);
         if (email == null)
             return false;
-       return await SendOTPAsync(request.Email, GenerateOtp());
+        return await SendOTPAsync(request.Email, GenerateOtp());
     }
 
     public async Task<bool> SendOTPAsync(string toEmail, string otp)
@@ -137,7 +137,14 @@ public class UserService : IUserService
             };
 
             await smtp.SendMailAsync(message);
-
+            var otpCode = new OTPEntity
+            {
+                Email = toEmail,
+                Code = otp,
+                ExpiresAt = DateTime.UtcNow.AddMinutes(5)
+            };
+            await _unitOfWork.OTPRepository.AddAsync(otpCode);
+            await _unitOfWork.CommitAsync();
             return true;
         }
         catch (Exception ex)
@@ -195,5 +202,69 @@ public class UserService : IUserService
     public Task<UserDto> UpdateUserAsync(int userId, UpdateUserDto updateUserDto)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<bool> SignUpAsync(SignupRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Email))
+            return false;
+
+        var existingUser = await _unitOfWork.UserRepository.GetByEmailAsync(request.Email);
+        if (existingUser != null)
+        {
+            _logger.LogWarning($"Email {request.Email} is already registered.");
+            return false;
+        }
+
+        var newUser = new UserEntity
+        {
+            Email = request.Email,
+            FullName = request.FullName,
+            DateOfBirth = request.DateOfBirth,
+            Address = request.Address,
+            PhoneNumber = request.PhoneNumber,
+            RoleId = 2
+        };
+
+        await _unitOfWork.UserRepository.AddAsync(newUser);
+        await _unitOfWork.CommitAsync();
+
+        return await SendOTPAsync(request.Email, GenerateOtp());
+    }
+
+    public async Task<bool> LogoutAsync()
+    {
+        // Assuming logout involves invalidating a session or token
+        try
+        {
+            // Perform any necessary cleanup or token invalidation logic here
+            _logger.LogInformation("User logged out successfully.");
+            return await Task.FromResult(true);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"An error occurred during logout: {ex.Message}");
+            return await Task.FromResult(false);
+        }
+    }
+
+    public async Task<bool> VerifyOtpAsync(VerifyOtpRequest request)
+    {
+        if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Otp))
+            return false;
+
+        var user = await _unitOfWork.UserRepository.GetByEmailAsync(request.Email);
+        if (user == null)
+            return false;
+
+        var isOtpValid = await _unitOfWork.OTPRepository.VerifyOtpAsync(request.Email, request.Otp);
+        if (!isOtpValid)
+        {
+            _logger.LogWarning($"Invalid OTP for email {request.Email}.");
+            return false;
+        }
+
+        _logger.LogInformation($"OTP verified successfully for email {request.Email}.");
+        return true;
     }
 }

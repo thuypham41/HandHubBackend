@@ -108,16 +108,34 @@ public class UserController : BaseController<UserController>
     {
         try
         {
-            var user = await _userService.SignupAsync(request);
-            if (user == null)
+            var isSuccess = await _userService.SignUpAsync(request);
+            if (isSuccess)
             {
                 return ErrorResponse("Signup failed", HttpStatusCode.BadRequest);
             }
-            return CommonResponse(user, "Signup successful");
+            return CommonResponse(isSuccess, "Signup successful");
         }
         catch (Exception ex)
         {
             return ErrorResponse("Failed to signup", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpPost("verify-otp")]
+    public async Task<IActionResult> VerifyOtp([FromBody] VerifyOtpRequest request)
+    {
+        try
+        {
+            var isVerified = await _userService.VerifyOtpAsync(request);
+            if (!isVerified)
+            {
+                return ErrorResponse("Invalid OTP code", HttpStatusCode.BadRequest);
+            }
+            return CommonResponse(isVerified, "OTP verified successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to verify OTP", HttpStatusCode.InternalServerError, ex);
         }
     }
 
@@ -126,8 +144,8 @@ public class UserController : BaseController<UserController>
     {
         try
         {
-            await _userService.LogoutAsync();
-            return CommonResponse(null, "Logout successful");
+            bool isSuccess = await _userService.LogoutAsync();
+            return CommonResponse(isSuccess, "Logout successful");
         }
         catch (Exception ex)
         {

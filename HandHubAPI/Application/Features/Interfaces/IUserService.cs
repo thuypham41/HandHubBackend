@@ -12,5 +12,8 @@ namespace HandHubAPI.Application.Features.Interfaces
         Task<UserDto> UpdateUserAsync(int userId, UpdateUserDto updateUserDto);
         Task<bool> DeleteUserAsync(int userId);
         Task<bool> LoginAsync(LoginRequest request);
+        Task<bool> SignUpAsync(SignupRequest request);
+        Task<bool> LogoutAsync();
+        Task<bool> VerifyOtpAsync(VerifyOtpRequest request);
     }
 }
