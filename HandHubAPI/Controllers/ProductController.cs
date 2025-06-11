@@ -93,6 +93,7 @@ public class ProductController : BaseController<ProductController>
         catch (Exception ex)
         {
             return ErrorResponse("Failed to retrieve products", HttpStatusCode.InternalServerError, ex);
+
         }
     }
 }
