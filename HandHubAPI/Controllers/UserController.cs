@@ -126,12 +126,12 @@ public class UserController : BaseController<UserController>
     {
         try
         {
-            var isVerified = await _userService.VerifyOtpAsync(request);
-            if (!isVerified)
+            var currentUser = await _userService.VerifyOtpAsync(request);
+            if (currentUser == null)
             {
                 return ErrorResponse("Invalid OTP code", HttpStatusCode.BadRequest);
             }
-            return CommonResponse(isVerified, "OTP verified successfully");
+            return CommonResponse(currentUser, "OTP verified successfully");
         }
         catch (Exception ex)
         {

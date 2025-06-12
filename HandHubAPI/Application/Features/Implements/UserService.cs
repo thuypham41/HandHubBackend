@@ -248,23 +248,23 @@ public class UserService : IUserService
         }
     }
 
-    public async Task<bool> VerifyOtpAsync(VerifyOtpRequest request)
+    public async Task<UserEntity> VerifyOtpAsync(VerifyOtpRequest request)
     {
         if (string.IsNullOrEmpty(request.Email) || string.IsNullOrEmpty(request.Otp))
-            return false;
+            return null;
 
         var user = await _unitOfWork.UserRepository.GetByEmailAsync(request.Email);
         if (user == null)
-            return false;
+            return null;
 
         var isOtpValid = await _unitOfWork.OTPRepository.VerifyOtpAsync(request.Email, request.Otp);
         if (!isOtpValid)
         {
             _logger.LogWarning($"Invalid OTP for email {request.Email}.");
-            return false;
+            return null;
         }
 
         _logger.LogInformation($"OTP verified successfully for email {request.Email}.");
-        return true;
+        return user;
     }
 }

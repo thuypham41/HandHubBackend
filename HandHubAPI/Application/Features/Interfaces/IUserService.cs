@@ -1,5 +1,6 @@
 using HandHubAPI.Application.DTOs;
 using HandHubAPI.Controllers;
+using HandHubAPI.Domain.Entities;
 using HandHubAPI.Requests;
 
 namespace HandHubAPI.Application.Features.Interfaces
@@ -14,6 +15,6 @@ namespace HandHubAPI.Application.Features.Interfaces
         Task<bool> LoginAsync(LoginRequest request);
         Task<bool> SignUpAsync(SignupRequest request);
         Task<bool> LogoutAsync();
-        Task<bool> VerifyOtpAsync(VerifyOtpRequest request);
+        Task<UserEntity> VerifyOtpAsync(VerifyOtpRequest request);
     }
 }

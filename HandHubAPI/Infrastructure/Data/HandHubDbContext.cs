@@ -14,6 +14,7 @@ public class HandHubDbContext : DbContext
     public DbSet<OrderDetailEntity> OrderDetail { get; set; }
     public DbSet<NegotiationMessageEntity> NegotiationMessage { get; set; }
     public DbSet<ProductApprovalEntity> ProductApproval { get; set; }
+    public DbSet<OTPEntity> OTP { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -78,7 +79,7 @@ public class HandHubDbContext : DbContext
             .WithMany()
             .HasForeignKey(m => m.AdminId)
             .OnDelete(DeleteBehavior.NoAction);
-            
+
         builder.Entity<ProductEntity>()
             .HasOne(m => m.Category)
             .WithMany()
