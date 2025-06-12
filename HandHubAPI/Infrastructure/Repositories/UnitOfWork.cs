@@ -51,6 +51,9 @@ public class UnitOfWork : IUnitOfWork
 
     public void RollbackTransaction()
     {
-        // Implement rollback logic here
+        if (_context.Database.CurrentTransaction != null)
+        {
+            _context.Database.CurrentTransaction.Rollback();
+        }
     }
 }

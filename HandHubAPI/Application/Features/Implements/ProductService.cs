@@ -14,40 +14,165 @@ public class ProductService : IProductService
 {
     private readonly ILogger<ProductService> _logger;
     private readonly IUnitOfWork _unitOfWork;
-    private readonly IConfiguration _configuration;
 
     public ProductService(
         ILogger<ProductService> logger,
-        IConfiguration configuration,
         IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
-        _configuration = configuration;
     }
 
-    public Task<ProductDto> CreateProductAsync(CreateProductRequest request)
+    public async Task<ProductDto> CreateProductAsync(CreateProductRequest request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var product = new ProductEntity
+            {
+                Name = request.Name,
+                Description = request.Description,
+                Price = request.Price,
+                CategoryId = request.CategoryId,
+                ImageUrl = request.ImageUrl
+            };
+
+            await _unitOfWork.ProductRepository.AddAsync(product);
+            await _unitOfWork.CommitAsync();
+
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            };
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.RollbackTransaction();
+            _logger.LogError(ex, "Error occurred while creating product.");
+            throw;
+        }
     }
 
-    public Task<bool> DeleteProductAsync(int id)
+    public async Task<bool> DeleteProductAsync(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(id);
+            if (product == null)
+            {
+                _logger.LogWarning($"Product with ID {id} not found for deletion.");
+                return false;
+            }
+
+            await _unitOfWork.ProductRepository.SoftDelete(id);
+            await _unitOfWork.CommitAsync();
+
+            _logger.LogInformation($"Product with ID {id} deleted successfully.");
+            return true;
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.RollbackTransaction();
+            _logger.LogError(ex, $"Error occurred while deleting product with ID {id}.");
+            throw;
+        }
     }
 
-    public Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+    public async Task<PaginatedResponse<ProductDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 20, int categoryId = 0, string? searchTerm = null)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var products = await _unitOfWork.ProductRepository.GetPaginatedAsync(pageNumber, pageSize, categoryId, searchTerm);
+
+            var productDtos = products.Items.Select(product => new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            }).ToList();
+
+            return new PaginatedResponse<ProductDto>
+            {
+                Items = productDtos,
+                TotalItems = products.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving all products.");
+            throw;
+        }
     }
 
-    public Task<ProductDto> GetProductByIdAsync(int id)
+    public async Task<ProductDto> GetProductByIdAsync(int id)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(id);
+            if (product == null)
+            {
+                return null;
+            }
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while retrieving product with ID {id}.");
+            throw;
+        }
     }
 
-    public Task<ProductDto?> UpdateProductAsync(int id, UpdateProductRequest request)
+    public async Task<ProductDto?> UpdateProductAsync(int id, UpdateProductRequest request)
     {
-        throw new NotImplementedException();
+        try
+        {
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(id);
+            if (product == null)
+            {
+                _logger.LogWarning($"Product with ID {id} not found for update.");
+                return null;
+            }
+
+            product.Name = request.Name;
+            product.Description = request.Description;
+            product.Price = request.Price;
+            product.ImageUrl = request.ImageUrl;
+
+            _unitOfWork.ProductRepository.Update(product);
+            await _unitOfWork.CommitAsync();
+
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            };
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.RollbackTransaction();
+            _logger.LogError(ex, $"Error occurred while updating product with ID {id}.");
+            throw;
+        }
     }
 }

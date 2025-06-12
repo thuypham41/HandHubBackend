@@ -5,4 +5,5 @@ using HandHubAPI.Domain.Interfaces;
 
 public interface IProductRepository : IBaseRepository<ProductEntity>
 {
+     Task<PaginatedResponse<ProductEntity>> GetPaginatedAsync(int PageNumber, int PageSize, int CategoryId, string? SearchTerm);
 }

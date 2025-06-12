@@ -27,6 +27,7 @@ public static class DependencyInjection
 
         //register services
         services.AddScoped<IUserService, UserService>();
+        services.AddScoped<IProductService, ProductService>();
         return services;
     }
 }

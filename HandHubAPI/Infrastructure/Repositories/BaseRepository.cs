@@ -58,7 +58,7 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
 
         var totalItems = await _dbSet.CountAsync();
         var items = await _dbSet
-            .Skip((validPageNumber - 1))
+            .Skip((validPageNumber - 1) * validPageSize)
             .Take(validPageSize)
             .ToListAsync();
 

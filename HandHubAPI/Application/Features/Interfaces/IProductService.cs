@@ -10,6 +10,6 @@ namespace HandHubAPI.Application.Features.Interfaces
         Task<ProductDto> CreateProductAsync(CreateProductRequest request);
         Task<ProductDto?> UpdateProductAsync(int id, UpdateProductRequest request);
         Task<bool> DeleteProductAsync(int id);
-        Task<IEnumerable<ProductDto>> GetAllProductsAsync();
+        Task<PaginatedResponse<ProductDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 20, int categoryId = 0, string? searchTerm = null);
     }
 }

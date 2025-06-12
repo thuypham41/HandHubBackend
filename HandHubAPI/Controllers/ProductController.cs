@@ -14,12 +14,38 @@ public class ProductController : BaseController<ProductController>
         _productService = productService;
     }
 
+    // Request DTOs
+    public class GetProductByIdRequest
+    {
+        public int Id { get; set; }
+    }
+
+    public class DeleteProductRequest
+    {
+        public int Id { get; set; }
+    }
+
+    public class GetAllProductsRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public int CategoryId { get; set; } = 0;
+    }
+
+    public class SearchProductByNameRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public int CategoryId { get; set; } = 0;
+        public string Name { get; set; } = string.Empty;
+    }
+
     [HttpGet("get-product-by-id")]
-    public async Task<IActionResult> GetProductById(int id)
+    public async Task<IActionResult> GetProductById([FromQuery] GetProductByIdRequest request)
     {
         try
         {
-            var product = await _productService.GetProductByIdAsync(id);
+            var product = await _productService.GetProductByIdAsync(request.Id);
             if (product == null)
             {
                 return ErrorResponse("Product not found", HttpStatusCode.NotFound);
@@ -46,12 +72,12 @@ public class ProductController : BaseController<ProductController>
         }
     }
 
-    [HttpPut("update-product/{id}")]
-    public async Task<IActionResult> UpdateProduct(int id, [FromBody] UpdateProductRequest request)
+    [HttpPut("update-product")]
+    public async Task<IActionResult> UpdateProduct([FromBody] UpdateProductRequest request)
     {
         try
         {
-            var product = await _productService.UpdateProductAsync(id, request);
+            var product = await _productService.UpdateProductAsync(request.Id, request);
             if (product == null)
             {
                 return ErrorResponse("Product not found", HttpStatusCode.NotFound);
@@ -65,11 +91,11 @@ public class ProductController : BaseController<ProductController>
     }
 
     [HttpDelete("delete-product/{id}")]
-    public async Task<IActionResult> DeleteProduct(int id)
+    public async Task<IActionResult> DeleteProduct([FromRoute] DeleteProductRequest request)
     {
         try
         {
-            var result = await _productService.DeleteProductAsync(id);
+            var result = await _productService.DeleteProductAsync(request.Id);
             if (!result)
             {
                 return ErrorResponse("Product not found", HttpStatusCode.NotFound);
@@ -83,16 +109,47 @@ public class ProductController : BaseController<ProductController>
     }
 
     [HttpGet("get-all-products")]
-    public async Task<IActionResult> GetAllProducts()
+    public async Task<IActionResult> GetAllProducts([FromQuery] GetAllProductsRequest request)
     {
         try
         {
-            var products = await _productService.GetAllProductsAsync();
-            return CommonResponse(products, "Products retrieved successfully");
+            var products = await _productService.GetAllProductsAsync(request.PageNumber, request.PageSize, request.CategoryId);
+            return PaginatedResponse(
+                products.Items,
+                products.PageNumber,
+                products.PageSize,
+                products.TotalItems,
+                "Products retrieved successfully"
+            );
         }
         catch (Exception ex)
         {
             return ErrorResponse("Failed to retrieve products", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpGet("search-by-name")]
+    public async Task<IActionResult> SearchProductByName([FromQuery] SearchProductByNameRequest request)
+    {
+        try
+        {
+            var products = await _productService.GetAllProductsAsync(
+                request.PageNumber,
+                request.PageSize,
+                categoryId: request.CategoryId,
+                searchTerm: request.Name
+            );
+            return PaginatedResponse(
+                products.Items,
+                products.PageNumber,
+                products.PageSize,
+                products.TotalItems,
+                "Products retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to search products", HttpStatusCode.InternalServerError, ex);
         }
     }
 }
