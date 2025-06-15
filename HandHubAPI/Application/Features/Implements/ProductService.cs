@@ -57,6 +57,37 @@ public class ProductService : IProductService
         }
     }
 
+    public async Task<PaginatedResponse<ProductDto>> GetRecentProducts(int pageNumber, int pageSize)
+    {
+        try
+        {
+            var products = await _unitOfWork.ProductRepository.GetRecentProductsAsync(pageNumber, pageSize);
+
+            var productDtos = products.Items.Select(product => new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            }).ToList();
+
+            return new PaginatedResponse<ProductDto>
+            {
+                Items = productDtos,
+                TotalItems = products.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving recent products.");
+            throw;
+        }
+    }
+
     public async Task<bool> DeleteProductAsync(int id)
     {
         try

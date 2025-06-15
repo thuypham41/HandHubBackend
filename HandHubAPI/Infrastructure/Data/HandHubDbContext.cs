@@ -15,6 +15,8 @@ public class HandHubDbContext : DbContext
     public DbSet<NegotiationMessageEntity> NegotiationMessage { get; set; }
     public DbSet<ProductApprovalEntity> ProductApproval { get; set; }
     public DbSet<OTPEntity> OTP { get; set; }
+    public DbSet<SubCategoryEntity> SubCategory { get; set; }
+    public DbSet<Product_SubcategoryEntity> Product_Subcategory { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -91,5 +93,17 @@ public class HandHubDbContext : DbContext
             .WithMany()
             .HasForeignKey(m => m.SellerId)
             .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Product_SubcategoryEntity>()
+                .HasOne(m => m.SubCategory)
+                .WithMany()
+                .HasForeignKey(m => m.SubcategoryId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<Product_SubcategoryEntity>()
+                .HasOne(m => m.Product)
+                .WithMany()
+                .HasForeignKey(m => m.ProductId)
+                .OnDelete(DeleteBehavior.NoAction);
     }
 }

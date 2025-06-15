@@ -40,6 +40,12 @@ public class ProductController : BaseController<ProductController>
         public string Name { get; set; } = string.Empty;
     }
 
+        public class GetRecentProductsRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+    }
+
     [HttpGet("get-product-by-id")]
     public async Task<IActionResult> GetProductById([FromQuery] GetProductByIdRequest request)
     {
@@ -150,6 +156,29 @@ public class ProductController : BaseController<ProductController>
         catch (Exception ex)
         {
             return ErrorResponse("Failed to search products", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpGet("get-recent-products")]
+    public async Task<IActionResult> GetRecentProducts([FromQuery] GetRecentProductsRequest request)
+    {
+        try
+        {
+            var products = await _productService.GetRecentProducts(
+                request.PageNumber,
+                request.PageSize
+            );
+            return PaginatedResponse(
+                products.Items,
+                products.PageNumber,
+                products.PageSize,
+                products.TotalItems,
+                "Recently created products retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve recent products", HttpStatusCode.InternalServerError, ex);
         }
     }
 }
