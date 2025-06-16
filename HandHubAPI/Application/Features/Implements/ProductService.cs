@@ -206,4 +206,62 @@ public class ProductService : IProductService
             throw;
         }
     }
+
+    public async Task<List<string>> GetAllCloudinaryImagesAsync(string cloudName, string apiKey, string apiSecret)
+    {
+        var imageUrls = new List<string>();
+        try
+        {
+            var account = new CloudinaryDotNet.Account(cloudName, apiKey, apiSecret);
+            var cloudinary = new CloudinaryDotNet.Cloudinary(account);
+
+            var resources = await cloudinary.ListResourcesAsync(new CloudinaryDotNet.Actions.ListResourcesParams
+            {
+                ResourceType = CloudinaryDotNet.Actions.ResourceType.Image,
+                MaxResults = 500
+            });
+
+            if (resources.Resources != null)
+            {
+                imageUrls.AddRange(resources.Resources.Select(r => r.SecureUrl.ToString()));
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving images from Cloudinary.");
+            throw;
+        }
+        return imageUrls;
+    }
+
+    public async Task<PaginatedResponse<ProductDto>> GetProductsBySubCategoryAsync(int pageNumber = 1, int pageSize = 20, int subCategoryId = 0, string? searchTerm = null)
+    {
+        try
+        {
+            var products = await _unitOfWork.Product_SubcategoryRepository.GetProductsBySubCategoryAsync(pageNumber, pageSize, subCategoryId, searchTerm);
+
+            var productDtos = products.Items.Select(product => new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            }).ToList();
+
+            return new PaginatedResponse<ProductDto>
+            {
+                Items = productDtos,
+                TotalItems = products.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving products by subcategory.");
+            throw;
+        }
+    }
 }

@@ -12,6 +12,7 @@ public interface IUnitOfWork : IDisposable
     IProductApprovalRepository ProductApprovalRepository { get; }
     IRoleRepository RoleRepository { get; }
     INegotiationMessageRepository NegotiationMessageRepository { get; }
+    IProduct_SubcategoryRepository Product_SubcategoryRepository { get; }
     IOTPRepository OTPRepository { get; }
     void BeginTransaction();
     void RollbackTransaction();

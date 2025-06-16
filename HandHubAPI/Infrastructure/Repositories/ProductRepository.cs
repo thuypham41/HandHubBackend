@@ -40,5 +40,29 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
             PageSize = validPageSize,
             TotalItems = totalItems
         };
+}
+
+    public async Task<PaginatedResponse<ProductEntity>> GetRecentProductsAsync(int PageNumber, int PageSize)
+    {
+        var validPageNumber = Math.Max(1, PageNumber);
+        var validPageSize = Math.Max(1, Math.Min(100, PageSize));
+
+        var query = _context.Product
+            .OrderByDescending(p => p.CreatedAt)
+            .AsQueryable();
+
+        var totalItems = await query.CountAsync();
+        var items = await query
+            .Skip((validPageNumber - 1) * validPageSize)
+            .Take(validPageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<ProductEntity>
+        {
+            Items = items,
+            PageNumber = validPageNumber,
+            PageSize = validPageSize,
+            TotalItems = totalItems
+        };
     }
 }

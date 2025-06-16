@@ -47,12 +47,48 @@ public static class SeedData
             var categories = new List<CategoryEntity>();
             for (int i = 1; i <= 10; i++)
             {
-                categories.Add(new CategoryEntity
+                var categoryNames = new[] { "Thời trang", "Sách", "Đồ gia dụng", "Đồ điện tử", "Đồ giải trí" };
+                foreach (var name in categoryNames)
                 {
-                    Name = $"Category {i}"
-                });
+                    categories.Add(new CategoryEntity
+                    {
+                        Name = name
+                    });
+                }
+                break; // Only add these 5 categories
             }
             context.Categorie.AddRange(categories);
+            context.SaveChanges();
+
+            // Seed SubCategories
+            var subCategories = new List<SubCategoryEntity>();
+
+            // Map of categories and their subcategories
+            var categorySubMap = new Dictionary<string, List<string>>
+            {
+                ["Thời trang"] = new List<string> { "Quần áo nam", "Quần áo nữ", "Giầy dép", "Phụ kiện" },
+                ["Đồ gia dụng"] = new List<string> { "Thiết bị nhà bếp", "Thiết bị làm sạch và chăm sóc nhà cửa", "Thiết bị giặt ủi", "Thiết bị sinh hoạt và chăm sóc cá nhân" },
+                ["Sách"] = new List<string> { "Tiểu thuyết", "Phi hư cấu", "Tự lực - phát triển bản thân", "giáo dục - học thuật" },
+                ["Đồ điện tử"] = new List<string> { "Thiết bị điện tử gia dụng", "Thiết bị điện tử cá nhân", "Phụ kiện điện tử", "THiết bị công nghệ - văn phòng" },
+                ["Đồ giải trí"] = new List<string> { "Thiết bị nghe nhìn", "THiết bị chơi game", "Dụng cụ thể thao - giải trí tại nhà", "Nhạc cụ - đồ sưu tầm" }
+            };
+
+            foreach (var category in categories)
+            {
+                if (categorySubMap.TryGetValue(category.Name, out var subNames))
+                {
+                    foreach (var subName in subNames)
+                    {
+                        subCategories.Add(new SubCategoryEntity
+                        {
+                            CategoryId = category.Id,
+                            Name = subName
+                        });
+                    }
+                }
+            }
+
+            context.SubCategory.AddRange(subCategories);
             context.SaveChanges();
 
             // Seed Products
@@ -79,6 +115,38 @@ public static class SeedData
             }
 
             context.Product.AddRange(products);
+            context.SaveChanges();
+
+            //Seed SubCategoryProducts
+            // Seed Product_Subcategory (SubcategoryProduct) relationships
+            var productSubcategories = new List<Product_SubcategoryEntity>();
+
+            // For each product, assign it to 1-2 random subcategories within its category
+            foreach (var product in products)
+            {
+                // Find subcategories that belong to the product's category
+                var subcatsInCategory = subCategories
+                    .Where(sc => sc.CategoryId == product.CategoryId)
+                    .ToList();
+
+                // Pick 1-2 random subcategories for this product
+                var numSubcats = random.Next(1, 3);
+                var assignedSubcats = subcatsInCategory
+                    .OrderBy(x => Guid.NewGuid())
+                    .Take(numSubcats)
+                    .ToList();
+
+                foreach (var subcat in assignedSubcats)
+                {
+                    productSubcategories.Add(new Product_SubcategoryEntity
+                    {
+                        ProductId = product.Id,
+                        SubcategoryId = subcat.Id
+                    });
+                }
+            }
+
+            context.Product_Subcategory.AddRange(productSubcategories);
             context.SaveChanges();
             // Seed Orders
             var orders = new List<OrderEntity>();

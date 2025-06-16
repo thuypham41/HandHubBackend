@@ -40,7 +40,7 @@ public class ProductController : BaseController<ProductController>
         public string Name { get; set; } = string.Empty;
     }
 
-        public class GetRecentProductsRequest
+    public class GetRecentProductsRequest
     {
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;
@@ -179,6 +179,38 @@ public class ProductController : BaseController<ProductController>
         catch (Exception ex)
         {
             return ErrorResponse("Failed to retrieve recent products", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    public class GetSubCategoryProductsRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public string? SearchTerm { get; set; } = null;
+        public int SubCategoryId { get; set; }
+    }
+
+    [HttpGet("get-subcategory-products")]
+    public async Task<IActionResult> GetSubCategoryProducts([FromQuery] GetSubCategoryProductsRequest request)
+    {
+        try
+        {
+            var products = await _productService.GetProductsBySubCategoryAsync(
+                request.PageNumber,
+                request.PageSize,
+                request.SubCategoryId
+            );
+            return PaginatedResponse(
+                products.Items,
+                products.PageNumber,
+                products.PageSize,
+                products.TotalItems,
+                "Products by subcategory retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve subcategory products", HttpStatusCode.InternalServerError, ex);
         }
     }
 }
