@@ -264,4 +264,51 @@ public class ProductService : IProductService
             throw;
         }
     }
+
+    public async Task<PaginatedResponse<ProductDto>> GetSuggestedProductsByPurchasedCategoryAsync(int pageNumber = 1, int pageSize = 20, int userId = 0)
+    {
+        try
+        {
+            // Get the list of category IDs the user has purchased from
+            var purchasedCategoryIds = await _unitOfWork.OrderRepository.GetPurchasedCategoryIdsByUserAsync(userId);
+
+            if (purchasedCategoryIds == null || !purchasedCategoryIds.Any())
+            {
+                return new PaginatedResponse<ProductDto>
+                {
+                    Items = new List<ProductDto>(),
+                    TotalItems = 0,
+                    PageNumber = pageNumber,
+                    PageSize = pageSize
+                };
+            }
+
+            // Get products from those categories, excluding user's own purchases if needed
+            var products = await _unitOfWork.ProductRepository.GetProductsByCategoryIdsAsync(
+                 pageNumber, pageSize, purchasedCategoryIds.ToList());
+
+            var productDtos = products.Items.Select(product => new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl
+            }).ToList();
+
+            return new PaginatedResponse<ProductDto>
+            {
+                Items = productDtos,
+                TotalItems = products.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving suggested products by purchased category.");
+            throw;
+        }
+    }
 }

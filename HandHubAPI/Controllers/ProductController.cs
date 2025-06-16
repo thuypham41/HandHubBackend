@@ -213,4 +213,36 @@ public class ProductController : BaseController<ProductController>
             return ErrorResponse("Failed to retrieve subcategory products", HttpStatusCode.InternalServerError, ex);
         }
     }
+
+    public class GetSuggestedProductsRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public int UserId { get; set; }
+    }
+
+    [HttpGet("get-suggested-products")]
+    public async Task<IActionResult> GetSuggestedProducts([FromQuery] GetSuggestedProductsRequest request)
+    {
+        try
+        {
+            var products = await _productService.GetSuggestedProductsByPurchasedCategoryAsync(
+                request.PageNumber,
+                request.PageSize,
+                request.UserId
+            );
+            return PaginatedResponse(
+                products.Items,
+                products.PageNumber,
+                products.PageSize,
+                products.TotalItems,
+                "Suggested products retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve suggested products", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
 }

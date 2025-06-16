@@ -5,4 +5,5 @@ using HandHubAPI.Domain.Interfaces;
 
 public interface IOrderRepository : IBaseRepository<OrderEntity>
 {
+    Task<IEnumerable<int>> GetPurchasedCategoryIdsByUserAsync(int userId);
 }

@@ -150,9 +150,11 @@ public static class SeedData
             context.SaveChanges();
             // Seed Orders
             var orders = new List<OrderEntity>();
+            var orderDetails = new List<OrderDetailEntity>();
+
             for (int i = 1; i <= 10; i++)
             {
-                var buyer = users[random.Next(users.Count)];
+                var buyer = users[1];
                 var order = new OrderEntity
                 {
                     BuyerId = buyer.Id,
@@ -164,8 +166,11 @@ public static class SeedData
                     TotalMoney = 0
                 };
 
+                // Add order to context and save to get generated Id
+                context.Order.Add(order);
+                context.SaveChanges();
+
                 // Mỗi order có 1-3 sản phẩm
-                var orderDetails = new List<OrderDetailEntity>();
                 var orderProducts = products.OrderBy(p => Guid.NewGuid()).Take(random.Next(1, 4)).ToList();
 
                 foreach (var prod in orderProducts)
@@ -173,6 +178,7 @@ public static class SeedData
                     var quantity = random.Next(1, 5);
                     var detail = new OrderDetailEntity
                     {
+                        OrderId = order.Id,
                         ProductId = prod.Id,
                         Price = prod.Price,
                         Num = quantity,
@@ -182,9 +188,11 @@ public static class SeedData
                     order.TotalMoney += detail.TotalMoney;
                 }
 
-                orders.Add(order);
+                // Update order's TotalMoney after adding details
+                context.SaveChanges();
             }
-            context.Order.AddRange(orders);
+
+            context.OrderDetail.AddRange(orderDetails);
             context.SaveChanges();
 
             // Seed Price Negotiations
