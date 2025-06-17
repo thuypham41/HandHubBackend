@@ -135,6 +135,47 @@ public class OrderController : BaseController<OrderController>
         }
     }
 
+    [HttpGet("get-order-detail-by-id")]
+    public async Task<IActionResult> GetOrderDetailById([FromQuery] int orderId)
+    {
+        try
+        {
+            var orderDetail = await _orderService.GetOrderDetailByIdAsync(orderId);
+            if (orderDetail == null)
+            {
+                return ErrorResponse("Order detail not found", HttpStatusCode.NotFound);
+            }
+            return CommonResponse(orderDetail, "Order detail retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve order detail", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpGet("get-all-sold-orders")]
+    public async Task<IActionResult> GetAllSoldOrders([FromQuery] GetAllSoldOrdersRequest request)
+    {
+        try
+        {
+            var orders = await _orderService.GetAllSoldOrdersByUserIdAsync(
+                request.CurrentUserId,
+                request.PageNumber,
+                request.PageSize
+            );
+            return PaginatedResponse(
+                orders.Items,
+                orders.PageNumber,
+                orders.PageSize,
+                orders.TotalItems,
+                "Sold orders retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve sold orders", HttpStatusCode.InternalServerError, ex);
+        }
+    }
     // [HttpGet("search-by-name")]
     // public async Task<IActionResult> SearchOrderByName([FromQuery] SearchOrderByNameRequest request)
     // {

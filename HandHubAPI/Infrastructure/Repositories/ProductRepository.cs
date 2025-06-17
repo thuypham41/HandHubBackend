@@ -92,4 +92,31 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
             TotalItems = totalItems
         };
     }
+
+    public async Task<PaginatedResponse<ProductEntity>> GetBySellerIdAsync(int PageNumber, int PageSize, int SellerId)
+    {
+        var validPageNumber = Math.Max(1, PageNumber);
+        var validPageSize = Math.Max(1, Math.Min(100, PageSize));
+
+        var query = _context.Product.AsQueryable();
+
+        if (SellerId > 0)
+        {
+            query = query.Where(p => p.SellerId == SellerId);
+        }
+
+        var totalItems = await query.CountAsync();
+        var items = await query
+            .Skip((validPageNumber - 1) * validPageSize)
+            .Take(validPageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<ProductEntity>
+        {
+            Items = items,
+            PageNumber = validPageNumber,
+            PageSize = validPageSize,
+            TotalItems = totalItems
+        };
+    }
 }

@@ -9,6 +9,12 @@ public class OrderRepository : BaseRepository<OrderEntity>, IOrderRepository
     public OrderRepository(HandHubDbContext context) : base(context)
     {
     }
+    public async Task<List<OrderEntity>> GetByIdsAsync(List<int> ids)
+    {
+        return await _context.Order
+            .Where(o => ids.Contains(o.Id))
+            .ToListAsync();
+    }
 
     public async Task<PaginatedResponse<OrderEntity>> GetPaginatedAsync(int pageNumber, int pageSize, int customerId = 0, string? searchTerm = null)
     {

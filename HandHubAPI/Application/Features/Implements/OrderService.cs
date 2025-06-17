@@ -70,10 +70,10 @@ public class OrderService : IOrderService
 
             return new PaginatedResponse<OrderDto>
             {
-            Items = orderDtos,
-            TotalItems = orders.TotalItems,
-            PageNumber = pageNumber,
-            PageSize = pageSize
+                Items = orderDtos,
+                TotalItems = orders.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
             };
         }
         catch (Exception ex)
@@ -83,6 +83,112 @@ public class OrderService : IOrderService
         }
     }
 
+    public async Task<PaginatedResponse<OrderDetailDto?>> GetOrderDetailByIdAsync(int orderId)
+    {
+        try
+        {
+            var order = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                return null;
+            }
+
+            var orderDetails = await _unitOfWork.OrderDetailRepository.GetByOrderIdAsync(order.Id);
+            var products = new List<ProductDto>();
+            foreach (var detail in orderDetails)
+            {
+                var product = await _unitOfWork.ProductRepository.GetByIdAsync(detail.ProductId);
+                if (product != null)
+                {
+                    products.Add(new ProductDto
+                    {
+                        Id = product.Id,
+                        Name = product.Name,
+                        Description = product.Description,
+                        Price = product.Price,
+                        CategoryId = product.CategoryId,
+                        ImageUrl = product.ImageUrl
+                    });
+                }
+            }
+
+            return new PaginatedResponse<OrderDetailDto?>
+            {
+                Items = orderDetails.Select(d => new OrderDetailDto
+                {
+                    OrderDetailId = d.Id,
+                    OrderId = d.OrderId,
+                    Product = products.FirstOrDefault(p => p.Id == d.ProductId) ?? new ProductDto(),
+                    Quantity = d.Num,
+                    Price = d.Price,
+                    TotalMoney = d.Num * d.Price
+                }).ToList(),
+                TotalItems = orderDetails.Count,
+                PageNumber = 1,
+                PageSize = orderDetails.Count
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while retrieving order details for orderId: {orderId}");
+            throw;
+        }
+    }
+
+    public async Task<PaginatedResponse<OrderSoldDetailDto>> GetAllSoldOrdersByUserIdAsync(int userId, int pageNumber, int pageSize)
+    {
+        try
+        {
+            var productsSellByUserId = await _unitOfWork.ProductRepository.GetBySellerIdAsync(userId, pageNumber, pageSize);
+
+            var orderDetails = await _unitOfWork.OrderDetailRepository.GetOrderIdsByProductIdsAsync(productsSellByUserId.Items.Select(p => p.Id).ToList());
+
+            var orders = await _unitOfWork.OrderRepository.GetByIdsAsync(orderDetails.Select(od => od.OrderId).ToList());
+
+            var orderDtos = new List<OrderSoldDetailDto>();
+
+            foreach (var detail in orderDetails)
+            {
+                var order = orders.FirstOrDefault(o => o.Id == detail.OrderId);
+                var product = productsSellByUserId.Items.FirstOrDefault(p => p.Id == detail.ProductId);
+
+                if (order != null && product != null)
+                {
+                    orderDtos.Add(new OrderSoldDetailDto
+                    {
+                        OrderDetailId = detail.Id,
+                        OrderId = detail.OrderId,
+                        Product = new ProductDto
+                        {
+                            Id = product.Id,
+                            Name = product.Name,
+                            Description = product.Description,
+                            Price = product.Price,
+                            CategoryId = product.CategoryId,
+                            ImageUrl = product.ImageUrl
+                        },
+                        Quantity = detail.Num,
+                        Price = detail.Price,
+                        TotalMoney = detail.Num * detail.Price,
+                        Status = order.Status
+                    });
+                }
+            }
+
+            return new PaginatedResponse<OrderSoldDetailDto>
+            {
+                Items = orderDtos,
+                TotalItems = orderDetails.Count,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while retrieving sold orders for userId: {userId}");
+            throw;
+        }
+    }
     // public Task<OrderDto?> GetOrderByIdAsync(int id)
     // {
     //     throw new NotImplementedException();

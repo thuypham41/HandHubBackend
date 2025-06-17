@@ -11,3 +11,24 @@ public class OrderDto
     public DateTime OrderDate { get; set; }
     public int Status { get; set; }
 }
+
+public class OrderDetailDto
+{
+    public int OrderDetailId { get; set; }
+    public int OrderId { get; set; }
+    public ProductDto Product { get; set; } = new();
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
+    public decimal TotalMoney { get; set; }
+}
+
+public class OrderSoldDetailDto
+{
+    public int OrderDetailId { get; set; }
+    public int OrderId { get; set; }
+    public ProductDto Product { get; set; } = new();
+    public int Quantity { get; set; }
+    public decimal Price { get; set; }
+    public decimal TotalMoney { get; set; }
+    public int Status { get; set; }
+}
