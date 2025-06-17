@@ -32,6 +32,13 @@ public class OrderController : BaseController<OrderController>
         public int CustomerId { get; set; } = 0;
     }
 
+    public class GetAllSoldOrdersRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public int CurrentUserId { get; set; } = 0;
+    }
+
     public class SearchOrderByCustomerNameRequest
     {
         public int PageNumber { get; set; } = 1;
@@ -108,25 +115,25 @@ public class OrderController : BaseController<OrderController>
     //     }
     // }
 
-    // [HttpGet("get-all-orders")]
-    // public async Task<IActionResult> GetAllOrders([FromQuery] GetAllOrdersRequest request)
-    // {
-    //     try
-    //     {
-    //         var orders = await _orderService.GetAllOrdersAsync(request.PageNumber, request.PageSize, request.CustomerId);
-    //         return PaginatedResponse(
-    //             orders.Items,
-    //             orders.PageNumber,
-    //             orders.PageSize,
-    //             orders.TotalItems,
-    //             "Orders retrieved successfully"
-    //         );
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return ErrorResponse("Failed to retrieve products", HttpStatusCode.InternalServerError, ex);
-    //     }
-    // }
+    [HttpGet("get-all-orders")]
+    public async Task<IActionResult> GetAllOrders([FromQuery] GetAllOrdersRequest request)
+    {
+        try
+        {
+            var orders = await _orderService.GetAllOrdersAsync(request.PageNumber, request.PageSize, request.CustomerId);
+            return PaginatedResponse(
+                orders.Items,
+                orders.PageNumber,
+                orders.PageSize,
+                orders.TotalItems,
+                "Orders retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve products", HttpStatusCode.InternalServerError, ex);
+        }
+    }
 
     // [HttpGet("search-by-name")]
     // public async Task<IActionResult> SearchOrderByName([FromQuery] SearchOrderByNameRequest request)

@@ -8,6 +8,6 @@ namespace HandHubAPI.Application.Features.Interfaces
         // Task<OrderDto> CreateOrderAsync(CreateOrderRequest request);
         // Task<OrderDto?> UpdateOrderAsync(int id, UpdateOrderRequest request);
         // Task<bool> DeleteOrderAsync(int id);
-        // Task<PaginatedResult<OrderDto>> GetAllOrdersAsync(int pageNumber, int pageSize, int customerId = 0, string? searchTerm = null);
+        Task<PaginatedResponse<OrderDto>> GetAllOrdersAsync(int pageNumber, int pageSize, int customerId = 0, string? searchTerm = null);
     }
 }
