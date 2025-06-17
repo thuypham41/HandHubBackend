@@ -37,6 +37,8 @@ public class OrderController : BaseController<OrderController>
         public int PageNumber { get; set; } = 1;
         public int PageSize { get; set; } = 20;
         public int CurrentUserId { get; set; } = 0;
+        public DateTime? date { get; set; }
+        public int Status { get; set; } = 3; // 3 means all status
     }
 
     public class SearchOrderByCustomerNameRequest
@@ -161,7 +163,9 @@ public class OrderController : BaseController<OrderController>
             var orders = await _orderService.GetAllSoldOrdersByUserIdAsync(
                 request.CurrentUserId,
                 request.PageNumber,
-                request.PageSize
+                request.PageSize,
+                request.date,
+                request.Status
             );
             return PaginatedResponse(
                 orders.Items,

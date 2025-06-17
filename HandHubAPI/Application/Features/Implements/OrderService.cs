@@ -135,49 +135,53 @@ public class OrderService : IOrderService
         }
     }
 
-    public async Task<PaginatedResponse<OrderSoldDetailDto>> GetAllSoldOrdersByUserIdAsync(int userId, int pageNumber, int pageSize)
+    public async Task<PaginatedResponse<OrderSoldDetailDto>> GetAllSoldOrdersByUserIdAsync(int userId, int pageNumber, int pageSize, DateTime? date, int status = 3)
     {
         try
         {
-            var productsSellByUserId = await _unitOfWork.ProductRepository.GetBySellerIdAsync(userId, pageNumber, pageSize);
+            // var productsSellByUserId = await _unitOfWork.ProductRepository.GetBySellerIdAsync(pageNumber, pageSize, userId);
 
-            var orderDetails = await _unitOfWork.OrderDetailRepository.GetOrderIdsByProductIdsAsync(productsSellByUserId.Items.Select(p => p.Id).ToList());
+            // var orderDetails = await _unitOfWork.OrderDetailRepository.GetOrderIdsByProductIdsAsync(productsSellByUserId.Items.Select(p => p.Id).ToList());
 
-            var orders = await _unitOfWork.OrderRepository.GetByIdsAsync(orderDetails.Select(od => od.OrderId).ToList());
+            // var orders = await _unitOfWork.OrderRepository.GetByIdsAsync(orderDetails.Select(od => od.OrderId).ToList(), status, date, userId);
 
-            var orderDtos = new List<OrderSoldDetailDto>();
+            // var orderDtos = new List<OrderSoldDetailDto>();
 
-            foreach (var detail in orderDetails)
-            {
-                var order = orders.FirstOrDefault(o => o.Id == detail.OrderId);
-                var product = productsSellByUserId.Items.FirstOrDefault(p => p.Id == detail.ProductId);
+            // foreach (var order in orders)
+            // {
+            //     var detail = orderDetails.FirstOrDefault(d => d.OrderId == order.Id);
+            //     if (detail != null)
+            //     {
+            //         var product = productsSellByUserId.Items.FirstOrDefault(p => p.Id == detail.ProductId);
 
-                if (order != null && product != null)
-                {
-                    orderDtos.Add(new OrderSoldDetailDto
-                    {
-                        OrderDetailId = detail.Id,
-                        OrderId = detail.OrderId,
-                        Product = new ProductDto
-                        {
-                            Id = product.Id,
-                            Name = product.Name,
-                            Description = product.Description,
-                            Price = product.Price,
-                            CategoryId = product.CategoryId,
-                            ImageUrl = product.ImageUrl
-                        },
-                        Quantity = detail.Num,
-                        Price = detail.Price,
-                        TotalMoney = detail.Num * detail.Price,
-                        Status = order.Status
-                    });
-                }
-            }
-
+            //         if (product != null)
+            //         {
+            //             orderDtos.Add(new OrderSoldDetailDto
+            //             {
+            //                 OrderDetailId = detail.Id,
+            //                 OrderId = detail.OrderId,
+            //                 Product = new ProductDto
+            //                 {
+            //                     Id = product.Id,
+            //                     Name = product.Name,
+            //                     Description = product.Description,
+            //                     Price = product.Price,
+            //                     CategoryId = product.CategoryId,
+            //                     ImageUrl = product.ImageUrl
+            //                 },
+            //                 Quantity = detail.Num,
+            //                 Price = detail.Price,
+            //                 TotalMoney = detail.Num * detail.Price,
+            //                 Status = order.Status,
+            //                 BuyerName = (await _unitOfWork.UserRepository.GetByIdAsync(order.BuyerId))?.FullName ?? "Unknown Buyer"
+            //             });
+            //         }
+            //     }
+            // }
+            var orderDetails = await _unitOfWork.OrderDetailRepository.GetOrderSoldDetailsBySellerIdAsync(userId, status, date);
             return new PaginatedResponse<OrderSoldDetailDto>
             {
-                Items = orderDtos,
+                Items = orderDetails,
                 TotalItems = orderDetails.Count,
                 PageNumber = pageNumber,
                 PageSize = pageSize

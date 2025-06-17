@@ -31,4 +31,5 @@ public class OrderSoldDetailDto
     public decimal Price { get; set; }
     public decimal TotalMoney { get; set; }
     public int Status { get; set; }
+    public string BuyerName { get; set; } = string.Empty;
 }

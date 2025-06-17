@@ -9,11 +9,32 @@ public class OrderRepository : BaseRepository<OrderEntity>, IOrderRepository
     public OrderRepository(HandHubDbContext context) : base(context)
     {
     }
-    public async Task<List<OrderEntity>> GetByIdsAsync(List<int> ids)
+    public async Task<List<OrderEntity>> GetByIdsAsync(List<int> ids, int status = 3, DateTime? date = null, int currentUserId = 0)
     {
-        return await _context.Order
-            .Where(o => ids.Contains(o.Id))
-            .ToListAsync();
+        var query = _context.Order.AsQueryable();
+
+        if (ids != null && ids.Count > 0)
+        {
+            query = query.Where(o => ids.Contains(o.Id));
+        }
+
+        if (currentUserId > 0)
+        {
+            query = query.Where(o => o.BuyerId != currentUserId);
+        }
+
+        if (status != 3)
+        {
+            query = query.Where(o => o.Status == status);
+        }
+
+        if (date.HasValue)
+        {
+            var targetDate = date.Value.Date;
+            query = query.Where(o => o.CreatedAt.HasValue && o.CreatedAt.Value.Date >= targetDate);
+        }
+
+        return await query.OrderByDescending(x => x.CreatedAt).ToListAsync();
     }
 
     public async Task<PaginatedResponse<OrderEntity>> GetPaginatedAsync(int pageNumber, int pageSize, int customerId = 0, string? searchTerm = null)
