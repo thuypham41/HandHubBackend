@@ -16,6 +16,40 @@ public class OrderService : IOrderService
         _logger = logger;
         _unitOfWork = unitOfWork;
     }
+    public async Task<OrderDto> CancelOrderAsync(int orderId, string reason)
+    {
+        try
+        {
+            var order = await _unitOfWork.OrderRepository.GetByIdAsync(orderId);
+            if (order == null)
+            {
+                _logger.LogWarning($"Order with ID {orderId} not found for cancellation.");
+                return null;
+            }
+
+            // Assuming there is a Status property and a CancelReason property
+            order.Status = -1; // -1 indicates cancelled
+            order.CancelReason = reason;
+            order.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.OrderRepository.Update(order);
+            await _unitOfWork.CommitAsync();
+
+            _logger.LogInformation($"Order with ID {orderId} cancelled successfully.");
+            return new OrderDto
+            {
+                OrderId = order.Id,
+                Status = order.Status,
+                BuyerId = order.BuyerId,
+                OrderDate = order.OrderDate
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while cancelling order with ID: {orderId}");
+            throw;
+        }
+    }
 
     // public Task<OrderDto> CreateOrderAsync(CreateOrderRequest request)
     // {
@@ -193,6 +227,9 @@ public class OrderService : IOrderService
             throw;
         }
     }
+
+
+
     // public Task<OrderDto?> GetOrderByIdAsync(int id)
     // {
     //     throw new NotImplementedException();

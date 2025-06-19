@@ -96,8 +96,8 @@ public class ProductController : BaseController<ProductController>
         }
     }
 
-    [HttpDelete("delete-product/{id}")]
-    public async Task<IActionResult> DeleteProduct([FromRoute] DeleteProductRequest request)
+    [HttpDelete("delete-product")]
+    public async Task<IActionResult> DeleteProduct([FromQuery] DeleteProductRequest request)
     {
         try
         {
@@ -242,6 +242,37 @@ public class ProductController : BaseController<ProductController>
         catch (Exception ex)
         {
             return ErrorResponse("Failed to retrieve suggested products", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    public class GetProductsBySellerWithoutOrderRequest
+    {
+        public int PageNumber { get; set; } = 1;
+        public int PageSize { get; set; } = 20;
+        public int SellerId { get; set; }
+    }
+
+    [HttpGet("get-products-by-seller-without-order")]
+    public async Task<IActionResult> GetProductsBySellerWithoutOrder([FromQuery] GetProductsBySellerWithoutOrderRequest request)
+    {
+        try
+        {
+            var products = await _productService.GetProductsBySellerWithoutOrderAsync(
+                request.PageNumber,
+                request.PageSize,
+                request.SellerId
+            );
+            return PaginatedResponse(
+                products.Items,
+                products.PageNumber,
+                products.PageSize,
+                products.TotalItems,
+                "Products by seller without order retrieved successfully"
+            );
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve products", HttpStatusCode.InternalServerError, ex);
         }
     }
 

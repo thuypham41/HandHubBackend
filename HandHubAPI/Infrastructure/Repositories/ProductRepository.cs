@@ -119,4 +119,36 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
             TotalItems = totalItems
         };
     }
+
+    public async Task<PaginatedResponse<ProductEntity>> GetProductsBySellerWithoutOrderAsync(int PageNumber, int PageSize, int SellerId)
+    {
+        var validPageNumber = Math.Max(1, PageNumber);
+        var validPageSize = Math.Max(1, Math.Min(100, PageSize));
+
+        var query = _context.Product.AsQueryable();
+
+        var excludedProductIds = _context.OrderDetail
+            .Where(od => _context.Order
+            .Any(o => o.Id == od.OrderId && o.Status != -1))
+            .Select(od => od.ProductId);
+
+        if (SellerId > 0)
+        {
+            query = query.Where(p => p.SellerId == SellerId && !excludedProductIds.Contains(p.Id));
+        }
+
+        var totalItems = await query.CountAsync();
+        var items = await query
+            .Skip((validPageNumber - 1) * validPageSize)
+            .Take(validPageSize)
+            .ToListAsync();
+
+        return new PaginatedResponse<ProductEntity>
+        {
+            Items = items,
+            PageNumber = validPageNumber,
+            PageSize = validPageSize,
+            TotalItems = totalItems
+        };
+    }
 }

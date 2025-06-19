@@ -49,6 +49,11 @@ public class OrderController : BaseController<OrderController>
         public string Name { get; set; } = string.Empty;
     }
 
+    public class CancelOrderRequest
+    {
+        public int OrderId { get; set; }
+        public string Reason { get; set; } = string.Empty;
+    }
     // [HttpGet("get-order-by-id")]
     // public async Task<IActionResult> GetOrderById([FromQuery] GetOrderByIdRequest request)
     // {
@@ -180,6 +185,26 @@ public class OrderController : BaseController<OrderController>
             return ErrorResponse("Failed to retrieve sold orders", HttpStatusCode.InternalServerError, ex);
         }
     }
+
+    [HttpPost("cancel-order")]
+    public async Task<IActionResult> CancelOrder([FromBody] CancelOrderRequest request)
+    {
+        try
+        {
+            var result = await _orderService.CancelOrderAsync(request.OrderId, request.Reason);
+            if (result == null)
+            {
+                return ErrorResponse("Order not found or cannot be cancelled", HttpStatusCode.BadRequest);
+            }
+            return CommonResponse(result, "Order cancelled successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to cancel order", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+
     // [HttpGet("search-by-name")]
     // public async Task<IActionResult> SearchOrderByName([FromQuery] SearchOrderByNameRequest request)
     // {

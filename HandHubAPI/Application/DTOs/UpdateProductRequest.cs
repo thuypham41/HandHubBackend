@@ -9,4 +9,5 @@ public class UpdateProductRequest
     public string Description { get; set; } = string.Empty;
     public string ImageUrl { get; set; } = string.Empty;
     public int Status { get; set; }
+    public bool IsDeleted { get; set; } = false;
 }

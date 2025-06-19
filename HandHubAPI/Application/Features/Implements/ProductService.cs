@@ -23,6 +23,38 @@ public class ProductService : IProductService
         _unitOfWork = unitOfWork;
     }
 
+    public async Task<PaginatedResponse<ProductDto>> GetProductsBySellerWithoutOrderAsync(int pageNumber, int pageSize, int sellerId)
+    {
+        try
+        {
+            var products = await _unitOfWork.ProductRepository.GetProductsBySellerWithoutOrderAsync(pageNumber, pageSize, sellerId);
+
+            var productDtos = products.Items.Select(product => new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl,
+                CreatedAt = product.CreatedAt,
+                IsDeleted = product.IsDeleted
+            }).ToList();
+
+            return new PaginatedResponse<ProductDto>
+            {
+                Items = productDtos,
+                TotalItems = products.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while retrieving products by seller without order for seller ID {sellerId}.");
+            throw;
+        }
+    }
     public async Task<ProductDto> CreateProductAsync(CreateProductRequest request)
     {
         try

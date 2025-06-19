@@ -17,8 +17,9 @@ public class OrderEntity : BaseEntity
 
     public DateTime OrderDate { get; set; }
 
-    public int Status { get; set; } // 0: Đang xử lý, 1: Đang giao hàng, 2: Đã giao hàng, 3: Tất cả
+    public int Status { get; set; } // 0: Đang xử lý, 1: Đang giao hàng, 2: Đã giao hàng, 3: Tất cả, -1: Đã hủy
 
+    public string? CancelReason { get; set; }
     public int TotalMoney { get; set; }
     [ForeignKey("BuyerId")]
     public UserEntity? Buyer { get; set; }
