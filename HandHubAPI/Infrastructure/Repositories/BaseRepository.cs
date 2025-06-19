@@ -51,6 +51,11 @@ public class BaseRepository<T> : IBaseRepository<T> where T : class
         return entity;
     }
 
+    public async Task<T?> GetByIdAWithoutDeleteAsync(int id)
+    {
+        return await _dbSet.FindAsync(id);
+    }
+
     public async Task<PaginatedResponse<T>> GetPaginatedAsync(int PageNumber, int PageSize)
     {
         var validPageNumber = Math.Max(1, PageNumber);

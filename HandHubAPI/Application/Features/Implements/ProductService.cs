@@ -343,4 +343,61 @@ public class ProductService : IProductService
             throw;
         }
     }
+
+    public async Task<PaginatedResponse<CategoryDto>> GetAllCategoriesAsync(int pageNumber, int pageSize)
+    {
+        try
+        {
+            var categories = await _unitOfWork.CategoryRepository.GetPaginatedAsync(pageNumber, pageSize);
+
+            var categoryDtos = categories.Items.Select(category => new CategoryDto
+            {
+                Id = category.Id,
+                Name = category.Name
+            }).ToList();
+
+            return new PaginatedResponse<CategoryDto>
+            {
+                Items = categoryDtos,
+                TotalItems = categories.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving all categories.");
+            throw;
+        }
+    }
+
+    public async Task<PaginatedResponse<SubCategoryDto>> GetAllSubCategoriesAsync(int pageNumber, int pageSize, int categoryId = 0)
+    {
+        try
+        {
+            var subCategories = await _unitOfWork.SubCategoryRepository.GetPaginatedAsync(pageNumber, pageSize);
+
+            var subCategoryDtos = subCategories.Items
+                .Where(x => x.CategoryId == categoryId)
+                .Select(subCategory => new SubCategoryDto
+                {
+                    Id = subCategory.Id,
+                    Name = subCategory.Name,
+                    CategoryId = subCategory.CategoryId
+                }).ToList();
+
+            return new PaginatedResponse<SubCategoryDto>
+            {
+                Items = subCategoryDtos,
+                TotalItems = subCategories.TotalItems,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving all subcategories.");
+            throw;
+        }
+    }
 }

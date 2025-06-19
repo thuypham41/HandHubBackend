@@ -14,6 +14,7 @@ public interface IUnitOfWork : IDisposable
     INegotiationMessageRepository NegotiationMessageRepository { get; }
     IProduct_SubcategoryRepository Product_SubcategoryRepository { get; }
     IOTPRepository OTPRepository { get; }
+    ISubCategoryRepository SubCategoryRepository { get; }
     void BeginTransaction();
     void RollbackTransaction();
     Task<int> CommitAsync();

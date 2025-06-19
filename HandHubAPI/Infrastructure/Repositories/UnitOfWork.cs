@@ -23,6 +23,7 @@ public class UnitOfWork : IUnitOfWork
     private INegotiationMessageRepository? _negotiationMessages;
     private IOTPRepository? _otpRepository;
     private IProduct_SubcategoryRepository? _productSubcategoryRepository;
+    private ISubCategoryRepository? _subCategoryRepository;
 
     public IUserRepository UserRepository => _users ??= new UserRepository(_context);
     public IProductRepository ProductRepository => _products ??= new ProductRepository(_context);
@@ -35,6 +36,7 @@ public class UnitOfWork : IUnitOfWork
     public INegotiationMessageRepository NegotiationMessageRepository => _negotiationMessages ??= new NegotiationMessageRepository(_context);
     public IOTPRepository OTPRepository => _otpRepository ??= new OTPRepository(_context);
     public IProduct_SubcategoryRepository Product_SubcategoryRepository => _productSubcategoryRepository ??= new Product_SubcategoryRepository(_context);
+    public ISubCategoryRepository SubCategoryRepository => _subCategoryRepository ??= new SubCategoryRepository(_context);
 
     public async Task<int> CommitAsync()
     {
