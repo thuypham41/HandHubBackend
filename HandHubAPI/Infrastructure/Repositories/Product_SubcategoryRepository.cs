@@ -40,4 +40,8 @@ public class Product_SubcategoryRepository : BaseRepository<Product_SubcategoryE
             TotalItems = totalItems
         };
     }
+    public async Task<Product_SubcategoryEntity?> GetByProductIdAsync(int productId)
+    {
+        return await _context.Product_Subcategory.FirstOrDefaultAsync(psc => psc.ProductId == productId);
+    }
 }

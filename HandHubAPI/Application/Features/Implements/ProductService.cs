@@ -217,8 +217,13 @@ public class ProductService : IProductService
             product.Description = request.Description;
             product.Price = request.Price;
             product.ImageUrl = request.ImageUrl;
+            product.CategoryId = request.CategoryId;
+            // Update CategoryId and SubCategoryId if they are different
+            var productSubCategory = await _unitOfWork.Product_SubcategoryRepository.GetByProductIdAsync(id);
+            productSubCategory.SubcategoryId = request.SubCategoryId;
 
             _unitOfWork.ProductRepository.Update(product);
+            _unitOfWork.Product_SubcategoryRepository.Update(productSubCategory);
             await _unitOfWork.CommitAsync();
 
             return new ProductDto
