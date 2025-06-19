@@ -16,13 +16,13 @@ public class Product_SubcategoryRepository : BaseRepository<Product_SubcategoryE
         var validPageSize = Math.Max(1, Math.Min(100, PageSize));
 
         var query = _context.Product_Subcategory
-            .Where(psc => psc.SubcategoryId == CategoryId)
+            .Where(psc => !psc.Product.IsDeleted && psc.SubcategoryId == CategoryId)
             .OrderByDescending(psc => psc.CreatedAt)
             .AsQueryable();
 
         if (!string.IsNullOrWhiteSpace(SearchTerm))
         {
-            query = query.Where(psc => psc.Product.Name.Contains(SearchTerm));
+            query = query.Where(psc => !psc.Product.IsDeleted && psc.Product.Name.Contains(SearchTerm));
         }
 
         var totalItems = await query.CountAsync();

@@ -16,6 +16,7 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
         var validPageSize = Math.Max(1, Math.Min(100, PageSize));
 
         var query = _context.Product.AsQueryable();
+        query = query.Where(p => !p.IsDeleted);
 
         if (CategoryId > 0)
         {

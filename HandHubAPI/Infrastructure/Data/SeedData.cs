@@ -104,7 +104,7 @@ public static class SeedData
                         SellerId = seller.Id,
                         Name = $"Product {category.Name} - {i}",
                         Condition = "New",
-                        Price = random.Next(100, 1000) * 1000,
+                        Price = random.Next(10, 100) * 10000,
                         Description = $"This is a sample description for product {i} in {category.Name}",
                         ImageUrl = "https://via.placeholder.com/150",
                         CreatedAt = DateTime.Now.AddDays(-random.Next(10)),
