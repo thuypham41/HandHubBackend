@@ -17,6 +17,8 @@ public class HandHubDbContext : DbContext
     public DbSet<OTPEntity> OTP { get; set; }
     public DbSet<SubCategoryEntity> SubCategory { get; set; }
     public DbSet<Product_SubcategoryEntity> Product_Subcategory { get; set; }
+    public DbSet<CartEntity> Cart { get; set; }
+    public DbSet<CartItemEntity> CartItem { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -105,5 +107,22 @@ public class HandHubDbContext : DbContext
                 .WithMany()
                 .HasForeignKey(m => m.ProductId)
                 .OnDelete(DeleteBehavior.NoAction);
+        builder.Entity<CartEntity>()
+            .HasOne(m => m.User)
+            .WithMany()
+            .HasForeignKey(m => m.UserId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<CartItemEntity>()
+            .HasOne(m => m.Cart)
+            .WithMany()
+            .HasForeignKey(m => m.CartId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<CartItemEntity>()
+            .HasOne(m => m.Product)
+            .WithMany()
+            .HasForeignKey(m => m.ProductId)
+            .OnDelete(DeleteBehavior.NoAction);
     }
 }

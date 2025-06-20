@@ -15,6 +15,8 @@ public interface IUnitOfWork : IDisposable
     IProduct_SubcategoryRepository Product_SubcategoryRepository { get; }
     IOTPRepository OTPRepository { get; }
     ISubCategoryRepository SubCategoryRepository { get; }
+    ICartRepository CartRepository { get; }
+    ICartItemRepository CartItemRepository { get; }
     void BeginTransaction();
     void RollbackTransaction();
     Task<int> CommitAsync();

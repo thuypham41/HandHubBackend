@@ -24,6 +24,8 @@ public class UnitOfWork : IUnitOfWork
     private IOTPRepository? _otpRepository;
     private IProduct_SubcategoryRepository? _productSubcategoryRepository;
     private ISubCategoryRepository? _subCategoryRepository;
+    private ICartRepository? _cartRepository;
+    private ICartItemRepository? _cartItemRepository;
 
     public IUserRepository UserRepository => _users ??= new UserRepository(_context);
     public IProductRepository ProductRepository => _products ??= new ProductRepository(_context);
@@ -37,6 +39,8 @@ public class UnitOfWork : IUnitOfWork
     public IOTPRepository OTPRepository => _otpRepository ??= new OTPRepository(_context);
     public IProduct_SubcategoryRepository Product_SubcategoryRepository => _productSubcategoryRepository ??= new Product_SubcategoryRepository(_context);
     public ISubCategoryRepository SubCategoryRepository => _subCategoryRepository ??= new SubCategoryRepository(_context);
+    public ICartRepository CartRepository => _cartRepository ??= new CartRepository(_context);
+    public ICartItemRepository CartItemRepository => _cartItemRepository ??= new CartItemRepository(_context);
 
     public async Task<int> CommitAsync()
     {
