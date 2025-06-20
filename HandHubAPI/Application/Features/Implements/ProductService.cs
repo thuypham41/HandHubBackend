@@ -65,10 +65,20 @@ public class ProductService : IProductService
                 Description = request.Description,
                 Price = request.Price,
                 CategoryId = request.CategoryId,
-                ImageUrl = request.ImageUrl
+                ImageUrl = request.ImageUrl,
+                SellerId = request.SellerId,
+                Status = 0
             };
-
-            await _unitOfWork.ProductRepository.AddAsync(product);
+            var productResult = await _unitOfWork.ProductRepository.AddAsync(product);
+            await _unitOfWork.CommitAsync();
+            var productSubCategory = new Product_SubcategoryEntity
+            {
+                ProductId = productResult.Id,
+                SubcategoryId = request.SubCategoryId,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.Product_SubcategoryRepository.AddAsync(productSubCategory);
             await _unitOfWork.CommitAsync();
 
             return new ProductDto
@@ -271,11 +281,11 @@ public class ProductService : IProductService
         return imageUrls;
     }
 
-    public async Task<PaginatedResponse<ProductDto>> GetProductsBySubCategoryAsync(int pageNumber = 1, int pageSize = 20, int subCategoryId = 0, string? searchTerm = null)
+    public async Task<PaginatedResponse<ProductDto>> GetProductsBySubCategoryAsync(int pageNumber = 1, int pageSize = 20, int subCategoryId = 0, int currentUserId = 0, string? searchTerm = null)
     {
         try
         {
-            var products = await _unitOfWork.Product_SubcategoryRepository.GetProductsBySubCategoryAsync(pageNumber, pageSize, subCategoryId, searchTerm);
+            var products = await _unitOfWork.Product_SubcategoryRepository.GetProductsBySubCategoryAsync(pageNumber, pageSize, subCategoryId, currentUserId, searchTerm);
 
             var productDtos = products.Items.Select(product => new ProductDto
             {

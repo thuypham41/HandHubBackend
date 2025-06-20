@@ -21,7 +21,7 @@ public class ProductEntity : BaseEntity
 
     [MaxLength(255)]
     public string ImageUrl { get; set; } = string.Empty;
-    public int Status { get; set; }
+    public int Status { get; set; } // 0: chờ duyệt, 1: đã duyệt, 2: đã bán
 
     [ForeignKey("CategoryId")]
     public CategoryEntity? Category { get; set; }

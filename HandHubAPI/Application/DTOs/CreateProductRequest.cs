@@ -3,6 +3,7 @@ namespace HandHubAPI.Application.DTOs;
 public class CreateProductRequest
 {
     public int CategoryId { get; set; }
+    public int SubCategoryId { get; set; }
     public int SellerId { get; set; }
     public string Name { get; set; } = string.Empty;
     public string Condition { get; set; } = string.Empty;

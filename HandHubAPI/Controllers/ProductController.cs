@@ -188,6 +188,7 @@ public class ProductController : BaseController<ProductController>
         public int PageSize { get; set; } = 20;
         public string? SearchTerm { get; set; } = null;
         public int SubCategoryId { get; set; }
+        public int CurrentUserId { get; set; } = 0; // Optional, for user-specific logic
     }
 
     [HttpGet("get-subcategory-products")]
@@ -198,7 +199,8 @@ public class ProductController : BaseController<ProductController>
             var products = await _productService.GetProductsBySubCategoryAsync(
                 request.PageNumber,
                 request.PageSize,
-                request.SubCategoryId
+                request.SubCategoryId,
+                request.CurrentUserId
             );
             return PaginatedResponse(
                 products.Items,
