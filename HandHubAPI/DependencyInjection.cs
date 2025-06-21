@@ -6,6 +6,7 @@ using HandHubAPI.Infrastructure.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace HandHubAPI;
+
 public static class DependencyInjection
 {
     public static IServiceCollection AddPresentation(this IServiceCollection services, IConfiguration configuration)
@@ -24,11 +25,14 @@ public static class DependencyInjection
         services.AddScoped<IPriceNegotiationRepository, PriceNegotiationRepository>();
         services.AddScoped<IProductApprovalRepository, ProductApprovalRepository>();
         services.AddScoped<IRoleRepository, RoleRepository>();
+        services.AddScoped<ICartRepository, CartRepository>();
+        services.AddScoped<ICartItemRepository, CartItemRepository>();
 
         //register services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IOrderService, OrderService>();
+        services.AddScoped<ICartService, CartService>();
         return services;
     }
 }

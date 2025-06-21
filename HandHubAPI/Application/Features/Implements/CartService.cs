@@ -7,6 +7,7 @@ using HandHubAPI.Requests;
 using Microsoft.Extensions.Configuration;
 using System.Net;
 using System.Net.Mail;
+using static HandHubAPI.Controllers.CartController;
 
 namespace HandHubAPI.Application.Features.Implements;
 
@@ -24,5 +25,110 @@ public class CartService : ICartService
         _logger = logger;
         _unitOfWork = unitOfWork;
         _configuration = configuration;
+    }
+
+    public async Task<CartDto> CreateCartAsync(CartController.CreateCartRequest request)
+    {
+        // Validate request
+        if (request == null || request.UserId <= 0)
+            throw new ArgumentException("Invalid cart creation request.");
+
+        // Check if user exists
+        var user = await _unitOfWork.UserRepository.GetByIdAsync(request.UserId);
+        if (user == null)
+            throw new InvalidOperationException("User not found.");
+
+        // Create new cart entity
+        var cart = new CartEntity
+        {
+            UserId = request.UserId,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = DateTime.UtcNow,
+        };
+
+        // Add cart to repository
+        await _unitOfWork.CartRepository.AddAsync(cart);
+        await _unitOfWork.CommitAsync();
+
+        // Map to DTO
+        var cartDto = new CartDto
+        {
+            Id = cart.Id,
+            UserId = cart.UserId,
+            CreatedAt = cart.CreatedAt,
+            UpdatedAt = cart.UpdatedAt,
+            Items = []
+        };
+
+        return cartDto;
+    }
+
+    public async Task<int> GetByUserIdAsync(int userId)
+    {
+        // Retrieve the cart entity by user ID
+        var cart = await _unitOfWork.CartRepository.GetByUserIdAsync(userId);
+        if (cart == null)
+            return 0;
+
+        return cart.Id;
+    }
+
+    public async Task<CartDto> AddItemToCartAsync(CartController.AddCartItemRequest request)
+    {
+        // Validate request
+        if (request == null || request.UserId <= 0 || request.ProductId <= 0 || request.Quantity <= 0)
+            throw new ArgumentException("Invalid add item to cart request.");
+
+        // Retrieve the cart for the user
+        var cart = await _unitOfWork.CartRepository.GetByUserIdAsync(request.UserId);
+        if (cart == null)
+            throw new InvalidOperationException("Cart not found for user.");
+
+        // Check if item already exists in cart
+        var cartItem = await _unitOfWork.CartItemRepository
+            .GetByCartAndProductIdAsync(cart.Id, request.ProductId);
+        if (cartItem != null)
+        {
+            cartItem.Quantity += request.Quantity;
+            cartItem.Price = request.Price; // Update price if necessary
+            cartItem.UpdatedAt = DateTime.UtcNow;
+            _unitOfWork.CartItemRepository.Update(cartItem);
+        }
+        else
+        {
+            var newItem = new CartItemEntity
+            {
+                CartId = cart.Id,
+                ProductId = request.ProductId,
+                Quantity = request.Quantity,
+                Price = request.Price,
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+            await _unitOfWork.CartItemRepository.AddAsync(newItem);
+        }
+
+        cart.UpdatedAt = DateTime.UtcNow;
+        cart.TotalPrice += request.Price * request.Quantity;
+        _unitOfWork.CartRepository.Update(cart);
+        await _unitOfWork.CommitAsync();
+
+        // Retrieve cart items from repository
+        var cartItems = await _unitOfWork.CartItemRepository.GetByCartIdAsync(cart.Id, request.UserId);
+
+        return new CartDto
+        {
+            Id = cart.Id,
+            UserId = cart.UserId,
+            CreatedAt = cart.CreatedAt,
+            UpdatedAt = cart.UpdatedAt,
+            Items = [.. cartItems.Select(item => new CartItemDto
+            {
+                Id = item.Id,
+                ProductId = item.ProductId,
+                Quantity = item.Quantity,
+                Price = request.Price,
+            })]
+        };
     }
 }
