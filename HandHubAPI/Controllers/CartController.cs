@@ -53,14 +53,6 @@ public class CartController : BaseController<CartController>
         public int Quantity { get; set; }
         public decimal Price { get; set; }
     }
-    // [HttpGet("{userId}")]
-    // public async Task<ActionResult<CartDto>> GetCart(int userId)
-    // {
-    //     var cart = await _cartService.GetCartByUserIdAsync(userId);
-    //     if (cart == null)
-    //         return NotFound();
-    //     return Ok(cart);
-    // }
 
     [HttpPost("create-cart")]
     public async Task<IActionResult> CreateCart([FromBody] CreateCartRequest request)
@@ -94,7 +86,38 @@ public class CartController : BaseController<CartController>
         }
         catch (Exception ex)
         {
-            return ErrorResponse("Failed to add item to cart", HttpStatusCode.InternalServerError, ex);
+            return ErrorResponse("Item is exist in cart", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpGet("get-items")]
+    public async Task<IActionResult> GetAllItems(int userId)
+    {
+        try
+        {
+            var items = await _cartService.GetCartItemsAsync(userId);
+            return CommonResponse(items, "Cart items retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to get cart items", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpDelete("remove-item")]
+    public async Task<IActionResult> RemoveItem([FromQuery] int userId, [FromQuery] int productId)
+    {
+        try
+        {
+            var result = await _cartService.RemoveItemFromCartAsync(userId, productId);
+            if (!result)
+                return NotFound("Item not found in cart.");
+
+            return CommonResponse(result, "Item removed from cart successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to remove item from cart", HttpStatusCode.InternalServerError, ex);
         }
     }
 }

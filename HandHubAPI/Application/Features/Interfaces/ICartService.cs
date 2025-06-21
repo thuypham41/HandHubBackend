@@ -8,13 +8,10 @@ namespace HandHubAPI.Application.Features.Interfaces
 {
     public interface ICartService
     {
-        // Task<CartDto> GetCartByUserIdAsync(int userId);
         Task<CartDto> CreateCartAsync(CreateCartRequest request);
         Task<int> GetByUserIdAsync(int userId);
-        // Task<CartDto> UpdateCartAsync(int userId, UpdateCartRequest request);
         Task<CartDto> AddItemToCartAsync(AddCartItemRequest request);
-        // Task<CartDto> RemoveItemFromCartAsync(int userId, int itemId);
-        // Task<decimal> CalculateTotalPriceAsync(int userId);
-        // Task<bool> ClearCartAsync(int userId);
+        Task<List<CartController.CartItemDto>> GetCartItemsAsync(int cartId);
+        Task<bool> RemoveItemFromCartAsync(int cartId, int productId);
     }
 }

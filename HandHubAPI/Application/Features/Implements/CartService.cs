@@ -89,10 +89,7 @@ public class CartService : ICartService
             .GetByCartAndProductIdAsync(cart.Id, request.ProductId);
         if (cartItem != null)
         {
-            cartItem.Quantity += request.Quantity;
-            cartItem.Price = request.Price; // Update price if necessary
-            cartItem.UpdatedAt = DateTime.UtcNow;
-            _unitOfWork.CartItemRepository.Update(cartItem);
+            throw new InvalidOperationException("This product is already in the cart.");
         }
         else
         {
@@ -130,5 +127,39 @@ public class CartService : ICartService
                 Price = request.Price,
             })]
         };
+    }
+
+    public async Task<List<CartItemDto>> GetCartItemsAsync(int userId)
+    {
+        var cart = await _unitOfWork.CartRepository.GetByUserIdAsync(userId);
+        if (cart == null)
+            return new List<CartItemDto>();
+
+        var cartItems = await _unitOfWork.CartItemRepository.GetByCartIdAsync(cart.Id, userId);
+        return [.. cartItems.Select(item => new CartItemDto
+        {
+            Id = item.Id,
+            ProductId = item.ProductId,
+            Quantity = item.Quantity,
+            Price = item.Price
+        })];
+    }
+
+    public async Task<bool> RemoveItemFromCartAsync(int userId, int productId)
+    {
+        var cart = await _unitOfWork.CartRepository.GetByUserIdAsync(userId);
+        if (cart == null)
+            return false;
+
+        var cartItem = await _unitOfWork.CartItemRepository.GetByCartAndProductIdAsync(cart.Id, productId);
+        if (cartItem == null)
+            return false;
+
+        await _unitOfWork.CartItemRepository.Delete(cartItem.Id);
+        cart.UpdatedAt = DateTime.UtcNow;
+        cart.TotalPrice -= cartItem.Price * cartItem.Quantity;
+        _unitOfWork.CartRepository.Update(cart);
+        await _unitOfWork.CommitAsync();
+        return true;
     }
 }
