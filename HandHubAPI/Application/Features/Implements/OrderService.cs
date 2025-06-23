@@ -51,16 +51,6 @@ public class OrderService : IOrderService
         }
     }
 
-    // public Task<OrderDto> CreateOrderAsync(CreateOrderRequest request)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
-    // public Task<bool> DeleteOrderAsync(int id)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
     public async Task<PaginatedResponse<OrderDto>> GetAllOrdersAsync(int pageNumber, int pageSize, int customerId = 0, string? searchTerm = null)
     {
         try
@@ -173,45 +163,6 @@ public class OrderService : IOrderService
     {
         try
         {
-            // var productsSellByUserId = await _unitOfWork.ProductRepository.GetBySellerIdAsync(pageNumber, pageSize, userId);
-
-            // var orderDetails = await _unitOfWork.OrderDetailRepository.GetOrderIdsByProductIdsAsync(productsSellByUserId.Items.Select(p => p.Id).ToList());
-
-            // var orders = await _unitOfWork.OrderRepository.GetByIdsAsync(orderDetails.Select(od => od.OrderId).ToList(), status, date, userId);
-
-            // var orderDtos = new List<OrderSoldDetailDto>();
-
-            // foreach (var order in orders)
-            // {
-            //     var detail = orderDetails.FirstOrDefault(d => d.OrderId == order.Id);
-            //     if (detail != null)
-            //     {
-            //         var product = productsSellByUserId.Items.FirstOrDefault(p => p.Id == detail.ProductId);
-
-            //         if (product != null)
-            //         {
-            //             orderDtos.Add(new OrderSoldDetailDto
-            //             {
-            //                 OrderDetailId = detail.Id,
-            //                 OrderId = detail.OrderId,
-            //                 Product = new ProductDto
-            //                 {
-            //                     Id = product.Id,
-            //                     Name = product.Name,
-            //                     Description = product.Description,
-            //                     Price = product.Price,
-            //                     CategoryId = product.CategoryId,
-            //                     ImageUrl = product.ImageUrl
-            //                 },
-            //                 Quantity = detail.Num,
-            //                 Price = detail.Price,
-            //                 TotalMoney = detail.Num * detail.Price,
-            //                 Status = order.Status,
-            //                 BuyerName = (await _unitOfWork.UserRepository.GetByIdAsync(order.BuyerId))?.FullName ?? "Unknown Buyer"
-            //             });
-            //         }
-            //     }
-            // }
             var orderDetails = await _unitOfWork.OrderDetailRepository.GetOrderSoldDetailsBySellerIdAsync(userId, status, date);
             return new PaginatedResponse<OrderSoldDetailDto>
             {
@@ -227,16 +178,4 @@ public class OrderService : IOrderService
             throw;
         }
     }
-
-
-
-    // public Task<OrderDto?> GetOrderByIdAsync(int id)
-    // {
-    //     throw new NotImplementedException();
-    // }
-
-    // public Task<OrderDto?> UpdateOrderAsync(int id, UpdateOrderRequest request)
-    // {
-    //     throw new NotImplementedException();
-    // }
 }

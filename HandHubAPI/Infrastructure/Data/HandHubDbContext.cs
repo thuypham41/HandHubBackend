@@ -19,6 +19,7 @@ public class HandHubDbContext : DbContext
     public DbSet<Product_SubcategoryEntity> Product_Subcategory { get; set; }
     public DbSet<CartEntity> Cart { get; set; }
     public DbSet<CartItemEntity> CartItem { get; set; }
+    public DbSet<NotificationEntity> Notification { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
@@ -123,6 +124,18 @@ public class HandHubDbContext : DbContext
             .HasOne(m => m.Product)
             .WithMany()
             .HasForeignKey(m => m.ProductId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<NotificationEntity>()
+            .HasOne(m => m.Sender)
+            .WithMany()
+            .HasForeignKey(m => m.SenderId)
+            .OnDelete(DeleteBehavior.NoAction);
+
+        builder.Entity<NotificationEntity>()
+            .HasOne(m => m.Receiver)
+            .WithMany()
+            .HasForeignKey(m => m.ReceiverId)
             .OnDelete(DeleteBehavior.NoAction);
     }
 }

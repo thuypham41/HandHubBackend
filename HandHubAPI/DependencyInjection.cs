@@ -27,12 +27,14 @@ public static class DependencyInjection
         services.AddScoped<IRoleRepository, RoleRepository>();
         services.AddScoped<ICartRepository, CartRepository>();
         services.AddScoped<ICartItemRepository, CartItemRepository>();
+        services.AddScoped<INotificationRepository, NotificationRepository>();
 
         //register services
         services.AddScoped<IUserService, UserService>();
         services.AddScoped<IProductService, ProductService>();
         services.AddScoped<IOrderService, OrderService>();
         services.AddScoped<ICartService, CartService>();
+        services.AddScoped<IChatHubService, ChatHubService>();
         return services;
     }
 }

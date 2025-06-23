@@ -1,4 +1,5 @@
 using HandHubAPI;
+using HandHubAPI.Hubs;
 using HandHubAPI.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,8 @@ builder.Services.AddCors(options =>
                    .AllowCredentials();
         });
 });
+
+builder.Services.AddSignalR();
 
 var app = builder.Build();
 
@@ -55,5 +58,7 @@ app.UseCors("AllowAllOrigins");
 app.UseHttpsRedirection();
 
 app.MapControllers();
+
+app.MapHub<NotificationHub>("/notification");
 
 app.Run();

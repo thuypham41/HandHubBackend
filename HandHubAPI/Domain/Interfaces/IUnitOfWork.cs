@@ -1,6 +1,7 @@
 using HandHubAPI.Domain.Repositories;
 
 namespace HandHubAPI.Domain.Interfaces;
+
 public interface IUnitOfWork : IDisposable
 {
     IUserRepository UserRepository { get; }
@@ -17,6 +18,7 @@ public interface IUnitOfWork : IDisposable
     ISubCategoryRepository SubCategoryRepository { get; }
     ICartRepository CartRepository { get; }
     ICartItemRepository CartItemRepository { get; }
+    INotificationRepository NotificationRepository { get; }
     void BeginTransaction();
     void RollbackTransaction();
     Task<int> CommitAsync();

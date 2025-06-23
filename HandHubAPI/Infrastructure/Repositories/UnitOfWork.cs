@@ -26,6 +26,7 @@ public class UnitOfWork : IUnitOfWork
     private ISubCategoryRepository? _subCategoryRepository;
     private ICartRepository? _cartRepository;
     private ICartItemRepository? _cartItemRepository;
+    private INotificationRepository? _notificationRepository;
 
     public IUserRepository UserRepository => _users ??= new UserRepository(_context);
     public IProductRepository ProductRepository => _products ??= new ProductRepository(_context);
@@ -41,6 +42,7 @@ public class UnitOfWork : IUnitOfWork
     public ISubCategoryRepository SubCategoryRepository => _subCategoryRepository ??= new SubCategoryRepository(_context);
     public ICartRepository CartRepository => _cartRepository ??= new CartRepository(_context);
     public ICartItemRepository CartItemRepository => _cartItemRepository ??= new CartItemRepository(_context);
+    public INotificationRepository NotificationRepository => _notificationRepository ??= new NotificationRepository(_context);
 
     public async Task<int> CommitAsync()
     {
