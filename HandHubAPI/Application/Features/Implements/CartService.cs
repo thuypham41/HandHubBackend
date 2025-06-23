@@ -73,7 +73,7 @@ public class CartService : ICartService
         return cart.Id;
     }
 
-    public async Task<CartDto> AddItemToCartAsync(CartController.AddCartItemRequest request)
+    public async Task<CartItemDto> AddItemToCartAsync(CartController.AddCartItemRequest request)
     {
         // Validate request
         if (request == null || request.UserId <= 0 || request.ProductId <= 0 || request.Quantity <= 0)
@@ -110,22 +110,14 @@ public class CartService : ICartService
         _unitOfWork.CartRepository.Update(cart);
         await _unitOfWork.CommitAsync();
 
-        // Retrieve cart items from repository
-        var cartItems = await _unitOfWork.CartItemRepository.GetByCartIdAsync(cart.Id, request.UserId);
-
-        return new CartDto
+        return (await GetCartItemsAsync(request.UserId)).LastOrDefault() ?? new CartItemDto
         {
-            Id = cart.Id,
-            UserId = cart.UserId,
-            CreatedAt = cart.CreatedAt,
-            UpdatedAt = cart.UpdatedAt,
-            Items = [.. cartItems.Select(item => new CartItemDto
-            {
-                Id = item.Id,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                Price = request.Price,
-            })]
+            Id = 0,
+            ProductId = request.ProductId,
+            Quantity = request.Quantity,
+            Price = request.Price,
+            ProductName = string.Empty,
+            ProductImage = string.Empty
         };
     }
 
