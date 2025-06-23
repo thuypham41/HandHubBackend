@@ -24,6 +24,8 @@ public class CartController : BaseController<CartController>
         public int ProductId { get; set; }
         public int Quantity { get; set; }
         public decimal Price { get; set; }
+        public string ProductName { get; set; } = string.Empty;
+        public string ProductImage { get; set; } = string.Empty;
     }
 
     public class CartDto
