@@ -20,10 +20,20 @@ public class NotificationHub : Hub
         _chatHubService = chatHubService;
         _unitOfWork = unitOfWork;
     }
-    public async Task OnConnectedAsync(int userId)
+    public override async Task OnConnectedAsync()
     {
-        _currentUserId = userId;
-        await Groups.AddToGroupAsync(Context.ConnectionId, userId.ToString());
+        var httpContext = Context.GetHttpContext();
+        var userIdString = httpContext?.Request.Query["userId"];
+        if (int.TryParse(userIdString, out _currentUserId))
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, _currentUserId.ToString());
+            Console.WriteLine($"User {_currentUserId} đã vào group.");
+        }
+        else
+        {
+            Console.WriteLine("Không có userId hợp lệ.");
+        }
+        await Groups.AddToGroupAsync(Context.ConnectionId, _currentUserId.ToString());
         await base.OnConnectedAsync();
     }
 
