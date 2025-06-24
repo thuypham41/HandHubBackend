@@ -41,6 +41,8 @@ public class ChatHubService : IChatHubService
     //     }
     // }
 
+
+
     public async Task<NotificationDto> AddNotificationToUserAsync(NotificationDto request)
     {
         try
@@ -77,6 +79,28 @@ public class ChatHubService : IChatHubService
     public async Task<bool> IsNotificationExist(int senderId, int reciverId)
     {
         return await _uow.NotificationRepository.IsNotificationExist(senderId, reciverId);
+    }
+
+    public async Task<IEnumerable<NotificationDto>> GetAllNotificationByCurrentIdAsync(int currentId)
+    {
+        try
+        {
+            var notifications = await _uow.NotificationRepository.GetAllNotificationByCurrentIdAsync(currentId);
+            return notifications.Select(n => new NotificationDto
+            {
+                Id = n.Id,
+                Title = n.Title,
+                SenderId = n.SenderId,
+                ReceiverId = n.ReceiverId,
+                Messeage = n.Content,
+                Type = n.Type
+            });
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error getting notifications for user {CurrentId}", currentId);
+            return new List<NotificationDto>();
+        }
     }
 
     public Task RemoveMessage(string messageId)

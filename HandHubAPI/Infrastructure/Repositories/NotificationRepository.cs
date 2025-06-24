@@ -82,4 +82,12 @@ public class NotificationRepository : BaseRepository<NotificationEntity>, INotif
 
         return true;
     }
+
+    public async Task<IEnumerable<NotificationEntity>> GetAllNotificationByCurrentIdAsync(int userId)
+    {
+        return await _context.Notification
+            .Where(x => x.ReceiverId == userId && !x.IsDeleted)
+            .OrderByDescending(x => x.CreatedAt)
+            .ToListAsync();
+    }
 }

@@ -1,5 +1,4 @@
 using System.Net;
-using HandHubAPI.Application.DTOs;
 using HandHubAPI.Application.Features.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 namespace HandHubAPI.Controllers;
@@ -203,30 +202,4 @@ public class OrderController : BaseController<OrderController>
             return ErrorResponse("Failed to cancel order", HttpStatusCode.InternalServerError, ex);
         }
     }
-
-
-    // [HttpGet("search-by-name")]
-    // public async Task<IActionResult> SearchOrderByName([FromQuery] SearchOrderByNameRequest request)
-    // {
-    //     try
-    //     {
-    //         var orders = await _orderService.GetAllOrdersAsync(
-    //             request.PageNumber,
-    //             request.PageSize,
-    //             customerId: request.CustomerId,
-    //             searchTerm: request.Name
-    //         );
-    //         return PaginatedResponse(
-    //             orders.Items,
-    //             orders.PageNumber,
-    //             orders.PageSize,
-    //             orders.TotalItems,
-    //             "Orders retrieved successfully"
-    //         );
-    //     }
-    //     catch (Exception ex)
-    //     {
-    //         return ErrorResponse("Failed to search orders", HttpStatusCode.InternalServerError, ex);
-    //     }
-    // }
 }

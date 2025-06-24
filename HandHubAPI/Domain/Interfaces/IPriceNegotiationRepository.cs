@@ -5,4 +5,5 @@ using HandHubAPI.Domain.Interfaces;
 
 public interface IPriceNegotiationRepository : IBaseRepository<PriceNegotiationEntity>
 {
+    Task<PriceNegotiationEntity?> GetByProductAndBuyerAsync(int productId, int buyerId);
 }
