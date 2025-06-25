@@ -24,12 +24,12 @@ public class NotificationController : BaseController<NotificationController>
         {
             var notifications = await _chatHubService.GetAllNotificationByCurrentIdAsync(currentId);
             if (!notifications.Any())
-                return ErrorResponse("No notifications found", HttpStatusCode.NotFound);
+                return ErrorResponse("No notifications found", System.Net.HttpStatusCode.NotFound);
             return CommonResponse(notifications, "Notifications retrieved successfully");
         }
         catch (Exception ex)
         {
-            return ErrorResponse("Failed to add price negotiation", HttpStatusCode.InternalServerError, ex);
+            return ErrorResponse("Failed to add price negotiation", System.Net.HttpStatusCode.InternalServerError, ex);
         }
     }
 

@@ -1,6 +1,7 @@
 using HandHubAPI;
 using HandHubAPI.Hubs;
 using HandHubAPI.Infrastructure.Data;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +26,8 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR();
+
+builder.Services.AddSingleton<IUserIdProvider, CustomUserIdProvider>();
 
 var app = builder.Build();
 

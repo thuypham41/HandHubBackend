@@ -10,14 +10,17 @@ namespace HandHubAPI.Controllers;
 public class PriceNegotiationController : BaseController<PriceNegotiationController>
 {
     private readonly IPriceNegotiationService _priceNegotiationService;
+    private readonly IHubContext<NotificationHub> _notificationHubContext;
     private readonly IChatHubService _chatHubService;
     public PriceNegotiationController(
         IPriceNegotiationService priceNegotiationService,
         IChatHubService chatHubService,
+        IHubContext<NotificationHub> notificationHubContext,
         ILogger<PriceNegotiationController> logger) : base(logger)
     {
         _priceNegotiationService = priceNegotiationService;
         _chatHubService = chatHubService;
+        _notificationHubContext = notificationHubContext;
     }
 
     [HttpPost("add-price-negotiation")]
@@ -26,10 +29,10 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
         try
         {
             var result = await _priceNegotiationService.AddPriceNegotiationAsync(request);
-            if (result == null)
-            {
-                return ErrorResponse("Price negotiation existed!", HttpStatusCode.NotFound);
-            }
+            // if (result == null)
+            // {
+            //     return ErrorResponse("Price negotiation existed!", HttpStatusCode.NotFound);
+            // }
 
             // Get product to find seller ID
             var product = await _priceNegotiationService.GetProductByIdAsync(request.ProductId);
@@ -48,8 +51,7 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
                         notificationMessage,
                         "Đề xuất giá mới",
                         null);
-
-                    await notificationHub.Clients.User(product.SellerId.ToString())
+                    await _notificationHubContext.Clients.User(product.SellerId.ToString())
                         .SendAsync("ReceiveNotification", new
                         {
                             SenderId = request.BuyerId,
@@ -66,7 +68,7 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
         }
         catch (Exception ex)
         {
-            return ErrorResponse("Failed to add price negotiation", HttpStatusCode.InternalServerError, ex);
+            return ErrorResponse("Failed to add price negotiation", System.Net.HttpStatusCode.InternalServerError, ex);
         }
     }
 
