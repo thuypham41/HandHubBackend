@@ -66,7 +66,7 @@ public class ChatHub : Hub
                     request.MessageContent.Trim(),
                     "Tin nhắn mới từ " + (buyer?.FullName ?? "Người dùng"),
                     null);
-                await Clients.User(product.SellerId.ToString())
+                await Clients.User(request.ReceiverId.ToString())
                                     .SendAsync("ReceiveMessage", new
                                     {
                                         request.SenderId,
