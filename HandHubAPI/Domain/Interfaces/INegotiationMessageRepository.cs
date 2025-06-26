@@ -5,4 +5,5 @@ using HandHubAPI.Domain.Interfaces;
 
 public interface INegotiationMessageRepository : IBaseRepository<NegotiationMessageEntity>
 {
+    Task<IEnumerable<NegotiationMessageEntity>> GetAllMessagesByNegotiationIdAsync(int priceNegotiationId);
 }

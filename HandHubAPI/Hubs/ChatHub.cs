@@ -7,7 +7,7 @@ using HandHubAPI.Domain.Interfaces;
 using Microsoft.AspNetCore.SignalR;
 using static HandHubAPI.Controllers.PriceNegotiationController;
 
-public class NotificationHub : Hub
+public class ChatHub : Hub
 {
     private readonly IPriceNegotiationService _priceNegotiationService;
     private readonly IChatHubService _chatHubService;
@@ -15,7 +15,7 @@ public class NotificationHub : Hub
     private const string MESSAGE_NOTIFICATION_TITLE = "Cảnh báo!";
     private const string MESSAGE_NOTIFICATION = "Bạn đã nhận được một cảnh báo vi phạm";
     private int _currentUserId;
-    public NotificationHub(
+    public ChatHub(
         IUnitOfWork unitOfWork,
         IChatHubService chatHubService,
         IPriceNegotiationService priceNegotiationService)
@@ -47,47 +47,33 @@ public class NotificationHub : Hub
         await base.OnDisconnectedAsync(exception);
     }
 
-    // public async Task SendNotificationToUser(int friendId, string message, string title = "Thông báo", string? imageUrl = null)
-    // {
-    //     var sender = await ValidateCurrentAccount(_currentUserId);
-
-    //     //var reciver = await _userManager.FindByIdAsync(friendId);
-
-    //     var notifiation = await SaveNotificationToUser(sender.Id, friendId, message, title, imageUrl);
-
-    //     await Clients.User(friendId.ToString()).SendAsync("ReceiveNotification", notifiation);
-    // }
-
-    public async Task SendNotificationToUser(AddPriceNegotiationRequest request)
+    public async Task SendMessageToUser(AddNegotiationMessageRequest request)
     {
         try
         {
-            var result = await _priceNegotiationService.AddPriceNegotiationAsync(request);
+            var result = await _priceNegotiationService.AddNegotiationMessageAsync(request);
 
+            var currentPriceNegotiation = await _priceNegotiationService.GetByIdAsync(request.PriceNegotiationId);
             // Get product to find seller ID
-            var product = await _priceNegotiationService.GetProductByIdAsync(request.ProductId);
-            var buyer = await _priceNegotiationService.GetUserByIdAsync(request.BuyerId);
+            var product = await _priceNegotiationService.GetProductByIdAsync(currentPriceNegotiation.ProductId);
+            var buyer = await _priceNegotiationService.GetUserByIdAsync(request.SenderId);
             if (product != null)
             {
-
-                var notificationMessage = $"{buyer?.FullName ?? "Ai đó"} đề xuất giá {request.OfferPrice:C} cho sản phẩm {product.Name}";
-
                 await SaveNotificationToUser(
-                    result.Id,
-                    request.BuyerId,
-                    product.SellerId,
-                    notificationMessage,
-                                    "Đề xuất giá mới",
-                                    null);
+                    currentPriceNegotiation.Id,
+                    request.SenderId,
+                    request.ReceiverId,
+                    request.MessageContent.Trim(),
+                    "Tin nhắn mới từ " + (buyer?.FullName ?? "Người dùng"),
+                    null);
                 await Clients.User(product.SellerId.ToString())
-                                    .SendAsync("ReceiveNotification", new
+                                    .SendAsync("ReceiveMessage", new
                                     {
-                                        SenderId = request.BuyerId,
-                                        ReceiverId = product.SellerId,
-                                        Message = notificationMessage,
-                                        Title = "Đề xuất giá mới",
+                                        request.SenderId,
+                                        request.ReceiverId,
+                                        request.MessageContent,
+                                        request.PriceNegotiationId,
                                         CreatedAt = DateTime.UtcNow,
-                                        Type = 2
                                     });
             }
         }
@@ -128,8 +114,8 @@ public class NotificationHub : Hub
             UpdatedAt = sendDatetime,
             Title = title,
             Subtitle = MESSAGE_NOTIFICATION_TITLE,
-            Type = 1,
-            RelatedId = priceNegotiationId
+            Type = 2,
+            RelatedId = priceNegotiationId,
         };
 
         return await _chatHubService.AddNotificationToUserAsync(notificationViewModel);

@@ -58,4 +58,56 @@ public class PriceNegotiationService : IPriceNegotiationService
     {
         return await _unitOfWork.UserRepository.GetByIdAsync(userId);
     }
+
+    public async Task<PriceNegotiationEntity?> GetByIdAsync(int id)
+    {
+        return await _unitOfWork.PriceNegotiationRepository.GetByIdAsync(id);
+    }
+
+    public async Task<NegotiationMessageEntity> AddNegotiationMessageAsync(AddNegotiationMessageRequest request)
+    {
+        try
+        {
+            // Get the existing price negotiation
+            var negotiation = await _unitOfWork.PriceNegotiationRepository.GetByIdAsync(request.PriceNegotiationId);
+            if (negotiation == null)
+            {
+                _logger.LogWarning("Price negotiation with ID {NegotiationId} not found", request.PriceNegotiationId);
+                return null;
+            }
+
+            // Create new negotiation message
+            var message = new NegotiationMessageEntity
+            {
+                PriceNegotiationId = request.PriceNegotiationId,
+                ReceivierId = request.ReceiverId,
+                SenderId = request.SenderId,
+                MessageContent = request.MessageContent,
+                CreatedAt = DateTime.UtcNow
+            };
+
+            await _unitOfWork.NegotiationMessageRepository.AddAsync(message);
+            await _unitOfWork.CommitAsync();
+
+            return message;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error adding negotiation message for negotiation {NegotiationId}", request.PriceNegotiationId);
+            return null;
+        }
+    }
+
+    public async Task<IEnumerable<NegotiationMessageEntity>> GetAllMessagesAsync(int priceNegotiationId)
+    {
+        try
+        {
+            return await _unitOfWork.NegotiationMessageRepository.GetAllMessagesByNegotiationIdAsync(priceNegotiationId);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error retrieving messages for negotiation {NegotiationId}", priceNegotiationId);
+            return Enumerable.Empty<NegotiationMessageEntity>();
+        }
+    }
 }

@@ -54,6 +54,7 @@ public class ChatHubService : IChatHubService
                 ReceiverId = request.ReceiverId,
                 Content = request.Messeage ?? "",
                 Type = request.Type,
+                RelatedId = request.RelatedId, // Assuming RelatedId is optional
             };
 
             var notification = await _uow.NotificationRepository.AddAsync(entity);
@@ -93,7 +94,8 @@ public class ChatHubService : IChatHubService
                 SenderId = n.SenderId,
                 ReceiverId = n.ReceiverId,
                 Messeage = n.Content,
-                Type = n.Type
+                Type = n.Type,
+                RelatedId = n.RelatedId,
             });
         }
         catch (Exception e)

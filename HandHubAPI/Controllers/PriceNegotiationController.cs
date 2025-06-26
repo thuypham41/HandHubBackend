@@ -94,6 +94,28 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
         return await _chatHubService.AddNotificationToUserAsync(notificationViewModel);
     }
 
+    [HttpGet("get-all-messages")]
+    public async Task<IActionResult> GetNegotiationMessagesAsync(int priceNegotiationId)
+    {
+        try
+        {
+            var messages = await _priceNegotiationService.GetAllMessagesAsync(priceNegotiationId);
+            return CommonResponse(messages, "Messages retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve messages", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    public class AddNegotiationMessageRequest
+    {
+        public int PriceNegotiationId { get; set; }
+        public int SenderId { get; set; }
+        public int ReceiverId { get; set; }
+        public string MessageContent { get; set; } = string.Empty;
+    }
+
     public class AddPriceNegotiationRequest
     {
         public int ProductId { get; set; }

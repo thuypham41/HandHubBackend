@@ -63,5 +63,6 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.MapHub<NotificationHub>("/notification");
+app.MapHub<ChatHub>("/chat");
 
 app.Run();
