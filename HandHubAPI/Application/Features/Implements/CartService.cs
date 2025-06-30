@@ -164,4 +164,24 @@ public class CartService : ICartService
         await _unitOfWork.CommitAsync();
         return true;
     }
+
+    public async Task<bool> ClearAllCartbyUserIdAsync(int userId)
+    {
+        var cart = await _unitOfWork.CartRepository.GetByUserIdAsync(userId);
+        if (cart == null)
+            return false;
+
+        var cartItems = await _unitOfWork.CartItemRepository.GetByCartIdAsync(cart.Id, userId);
+        foreach (var item in cartItems)
+        {
+            item.IsDeleted = true;
+            _unitOfWork.CartItemRepository.Update(item);
+        }
+
+        cart.UpdatedAt = DateTime.UtcNow;
+        cart.TotalPrice = 0;
+        _unitOfWork.CartRepository.Update(cart);
+        await _unitOfWork.CommitAsync();
+        return true;
+    }
 }

@@ -1,21 +1,87 @@
 using HandHubAPI.Application.DTOs;
 using HandHubAPI.Application.Features.Interfaces;
 using HandHubAPI.Domain.Interfaces;
+using HandHubAPI.Controllers;
+using HandHubAPI.Domain.Entities;
+using static HandHubAPI.Controllers.OrderController;
 
 namespace HandHubAPI.Application.Features.Implements;
 
 public class OrderService : IOrderService
 {
+    public ICartService CartService { get; set; } = null!;
     private readonly ILogger<OrderService> _logger;
     private readonly IUnitOfWork _unitOfWork;
 
     public OrderService(
         ILogger<OrderService> logger,
+        ICartService cartService,
         IUnitOfWork unitOfWork)
     {
         _logger = logger;
         _unitOfWork = unitOfWork;
+        CartService = cartService;
     }
+
+    public async Task<OrderDto> CreateOrderAsync(CreateOrderRequest request)
+    {
+        try
+        {
+            // Implementation for creating an order
+            // This is a basic implementation - adjust according to your domain model
+            var order = new OrderEntity
+            {
+                BuyerId = request.CustomerId,
+                TotalMoney = request.TotalMoney,
+                PaymentMethod = request.PaymentMethod,
+                Address = request.ShippingAddress,
+                OrderDate = DateTime.UtcNow,
+                Status = 0, // 0: Đang xử lý, 1: Đang giao hàng, 2: Đã giao hàng, 3: Tất cả, -1: Đã hủy
+                CreatedAt = DateTime.UtcNow,
+                UpdatedAt = DateTime.UtcNow
+            };
+
+            // Add order first to get the order ID
+            var orderAdded = await _unitOfWork.OrderRepository.AddAsync(order);
+            await _unitOfWork.CommitAsync();
+
+            // Add order items
+            foreach (var item in request.Items)
+            {
+                var orderDetail = new OrderDetailEntity
+                {
+                    OrderId = orderAdded.Id,
+                    ProductId = item.ProductId,
+                    Num = item.Quantity,
+                    Price = item.Price
+                };
+
+                await _unitOfWork.OrderDetailRepository.AddAsync(orderDetail);
+            }
+
+            await CartService.ClearAllCartbyUserIdAsync(request.CustomerId);
+            await _unitOfWork.CommitAsync();
+
+            _logger.LogInformation($"Order created successfully with ID: {orderAdded.Id}");
+
+            return new OrderDto
+            {
+                OrderId = orderAdded.Id,
+                BuyerId = orderAdded.BuyerId,
+                Price = orderAdded.TotalMoney,
+                PaymentMethod = orderAdded.PaymentMethod,
+                Address = orderAdded.Address,
+                OrderDate = orderAdded.OrderDate,
+                Status = orderAdded.Status
+            };
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while creating order");
+            throw;
+        }
+    }
+
     public async Task<OrderDto> CancelOrderAsync(int orderId, string reason)
     {
         try

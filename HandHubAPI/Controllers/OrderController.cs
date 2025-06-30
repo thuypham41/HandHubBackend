@@ -202,4 +202,35 @@ public class OrderController : BaseController<OrderController>
             return ErrorResponse("Failed to cancel order", HttpStatusCode.InternalServerError, ex);
         }
     }
+
+    public class CreateOrderRequest
+    {
+        public int CustomerId { get; set; }
+        public List<OrderItemRequest> Items { get; set; } = new List<OrderItemRequest>();
+        public int TotalMoney { get; set; }
+        public string PaymentMethod { get; set; } = string.Empty;
+        public string? Notes { get; set; }
+        public string ShippingAddress { get; set; } = string.Empty;
+    }
+
+    public class OrderItemRequest
+    {
+        public int ProductId { get; set; }
+        public int Quantity { get; set; }
+        public int Price { get; set; }
+    }
+
+    [HttpPost("create-order")]
+    public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
+    {
+        try
+        {
+            var order = await _orderService.CreateOrderAsync(request);
+            return CommonResponse(order, "Order created successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to create order", HttpStatusCode.InternalServerError, ex);
+        }
+    }
 }

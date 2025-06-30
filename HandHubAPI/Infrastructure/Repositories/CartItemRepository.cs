@@ -24,7 +24,7 @@ public class CartItemRepository : BaseRepository<CartItemEntity>, ICartItemRepos
     public async Task<IEnumerable<CartItemEntity>> GetByCartIdAsync(int cartId, int userId = 0)
     {
         return await _context.Set<CartItemEntity>()
-            .Where(ci => ci.CartId == cartId)
+            .Where(ci => ci.CartId == cartId && !ci.IsDeleted)
             .ToListAsync();
     }
 }
