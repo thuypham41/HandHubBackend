@@ -7,6 +7,7 @@ public class NotificationDto
     public bool IsRead { get; set; } = false;
     public int Type { get; set; }  = 1; // 1:negotiation, 2: chat
     public int RelatedId { get; set; } // ID of the related entity (e.g., PriceNegotiationId, ChatId)
+    public int ProductId { get; set; } = 0; // ID of the related product, if applicable
     public string Title { get; set; } = string.Empty;
     public string Subtitle { get; set; } = string.Empty;
     public DateTime? CreatedAt { get; set; } = DateTime.UtcNow;

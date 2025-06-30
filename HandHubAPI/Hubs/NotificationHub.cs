@@ -77,8 +77,8 @@ public class NotificationHub : Hub
                     request.BuyerId,
                     product.SellerId,
                     notificationMessage,
-                                    "Đề xuất giá mới",
-                                    null);
+                    "Đề xuất giá mới",
+                    null, request.ProductId);
                 await Clients.User(product.SellerId.ToString())
                                     .SendAsync("ReceiveNotification", new
                                     {
@@ -87,6 +87,7 @@ public class NotificationHub : Hub
                                         Message = notificationMessage,
                                         Title = "Đề xuất giá mới",
                                         CreatedAt = DateTime.UtcNow,
+                                        ProductId = request.ProductId,
                                         Type = 2
                                     });
             }
@@ -115,7 +116,7 @@ public class NotificationHub : Hub
     }
 
     private async Task<NotificationDto> SaveNotificationToUser(
-       int priceNegotiationId, int senderId, int reciverId, string message, string title, string? imageUrl)
+       int priceNegotiationId, int senderId, int reciverId, string message, string title, string? imageUrl, int productId)
     {
         var sendDatetime = DateTime.UtcNow;
 
@@ -129,7 +130,8 @@ public class NotificationHub : Hub
             Title = title,
             Subtitle = MESSAGE_NOTIFICATION_TITLE,
             Type = 1,
-            RelatedId = priceNegotiationId
+            RelatedId = priceNegotiationId,
+            ProductId = productId // Assuming ProductId is not used here
         };
 
         return await _chatHubService.AddNotificationToUserAsync(notificationViewModel);

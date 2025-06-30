@@ -33,4 +33,19 @@ public class NotificationController : BaseController<NotificationController>
         }
     }
 
+    [HttpDelete("remove-notification")]
+    public async Task<IActionResult> RemoveNotification([FromQuery] int notificationId)
+    {
+        try
+        {
+            var result = await _chatHubService.RemoveNotificationAsync(notificationId);
+            if (!result)
+                return ErrorResponse("Notification not found", HttpStatusCode.NotFound);
+            return CommonResponse(result, "Notification removed successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to remove notification", HttpStatusCode.InternalServerError, ex);
+        }
+    }
 }

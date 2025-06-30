@@ -32,7 +32,14 @@ public class PriceNegotiationService : IPriceNegotiationService
 
         if (existingNegotiation != null)
         {
-            return null;
+            // Update the existing negotiation's offer price
+            existingNegotiation.OfferPrice = request.OfferPrice;
+            existingNegotiation.SellerResponse = request?.SellerResponse ?? string.Empty;
+
+            _unitOfWork.PriceNegotiationRepository.Update(existingNegotiation);
+            await _unitOfWork.CommitAsync();
+
+            return existingNegotiation;
         }
 
         var priceNegotiation = new PriceNegotiationEntity

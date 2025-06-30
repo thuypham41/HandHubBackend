@@ -54,7 +54,9 @@ public class ChatHubService : IChatHubService
                 ReceiverId = request.ReceiverId,
                 Content = request.Messeage ?? "",
                 Type = request.Type,
-                RelatedId = request.RelatedId, // Assuming RelatedId is optional
+                RelatedId = request.RelatedId,
+                ProductId = request.ProductId, // Assuming ProductId is part of the NotificationDto
+                                               // Assuming RelatedId is optional
             };
 
             var notification = await _uow.NotificationRepository.AddAsync(entity);
@@ -96,6 +98,7 @@ public class ChatHubService : IChatHubService
                 Messeage = n.Content,
                 Type = n.Type,
                 RelatedId = n.RelatedId,
+                ProductId = n.ProductId,
             });
         }
         catch (Exception e)
@@ -108,6 +111,26 @@ public class ChatHubService : IChatHubService
     public Task RemoveMessage(string messageId)
     {
         throw new NotImplementedException();
+    }
+
+    public async Task<bool> RemoveNotificationAsync(int notificationId)
+    {
+        try
+        {
+            var notification = await _uow.NotificationRepository.GetByIdAsync(notificationId);
+            if (notification == null)
+                return false;
+
+            notification.IsDeleted = true; // Mark as deleted instead of removing
+            _uow.NotificationRepository.Update(notification); // Update the entity state
+            await _uow.CommitAsync();
+            return true;
+        }
+        catch (Exception e)
+        {
+            _logger.LogError(e, "Error removing notification {NotificationId}", notificationId);
+            return false;
+        }
     }
 
     private bool ValidateMessage(SendMessageRequestDto messageRequest)

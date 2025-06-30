@@ -223,14 +223,26 @@ public class ProductService : IProductService
                 return null;
             }
 
-            product.Name = request.Name;
-            product.Description = request.Description;
-            product.Price = request.Price;
-            product.ImageUrl = request.ImageUrl;
-            product.CategoryId = request.CategoryId;
-            // Update CategoryId and SubCategoryId if they are different
+            // Update only if properties have values
+            if (!string.IsNullOrEmpty(request.Name))
+                product.Name = request.Name;
+
+            if (!string.IsNullOrEmpty(request.Description))
+                product.Description = request.Description;
+
+            if (request.Price > 0)
+                product.Price = request.Price;
+
+            if (!string.IsNullOrEmpty(request.ImageUrl))
+                product.ImageUrl = request.ImageUrl;
+
+            if (request.CategoryId > 0)
+                product.CategoryId = request.CategoryId;
+
+            // Update SubCategoryId if it has a value
             var productSubCategory = await _unitOfWork.Product_SubcategoryRepository.GetByProductIdAsync(id);
-            productSubCategory.SubcategoryId = request.SubCategoryId;
+            if (request.SubCategoryId > 0)
+                productSubCategory.SubcategoryId = request.SubCategoryId;
 
             _unitOfWork.ProductRepository.Update(product);
             _unitOfWork.Product_SubcategoryRepository.Update(productSubCategory);

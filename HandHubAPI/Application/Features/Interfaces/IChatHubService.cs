@@ -14,5 +14,6 @@ namespace HandHubAPI.Application.Features.Interfaces
 
         Task<bool> IsNotificationExist(int senderId, int reciverId);
         Task<IEnumerable<NotificationDto>> GetAllNotificationByCurrentIdAsync(int currentUserId);
+        Task<bool> RemoveNotificationAsync(int id);
     }
 }

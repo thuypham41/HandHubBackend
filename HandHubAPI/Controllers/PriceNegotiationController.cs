@@ -50,7 +50,8 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
                         product.SellerId,
                         notificationMessage,
                         "Đề xuất giá mới",
-                        null);
+                        null,
+                        product.Id);
                     await _notificationHubContext.Clients.User(product.SellerId.ToString())
                         .SendAsync("ReceiveNotification", new
                         {
@@ -75,7 +76,7 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
     private const string MESSAGE_NOTIFICATION_TITLE = "Thông báo!";
     private const string MESSAGE_NOTIFICATION = "Bạn đã nhận được đề nghị thương lượng giá mới";
     private async Task<NotificationDto> SaveNotificationToUser(
-       int senderId, int reciverId, string message, string title, string? imageUrl)
+       int senderId, int reciverId, string message, string title, string? imageUrl, int productId)
     {
         var sendDatetime = DateTime.UtcNow;
 
@@ -88,6 +89,7 @@ public class PriceNegotiationController : BaseController<PriceNegotiationControl
             UpdatedAt = sendDatetime,
             Title = title,
             Subtitle = MESSAGE_NOTIFICATION_TITLE,
+            ProductId = productId, // Assuming ProductId is not used here
             Type = 1
         };
 
