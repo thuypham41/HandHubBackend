@@ -10,13 +10,13 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
     {
     }
 
-    public async Task<PaginatedResponse<ProductEntity>> GetPaginatedAsync(int PageNumber, int PageSize, int CategoryId, string? SearchTerm)
+    public async Task<PaginatedResponse<ProductEntity>> GetPaginatedAsync(int PageNumber, int PageSize, int CategoryId, int status, string? SearchTerm)
     {
         var validPageNumber = Math.Max(1, PageNumber);
         var validPageSize = Math.Max(1, Math.Min(100, PageSize));
 
         var query = _context.Product.AsQueryable();
-        query = query.Where(p => !p.IsDeleted);
+        query = query.Where(p => !p.IsDeleted && p.Status == status); // Only include products that are not deleted and have been approved
 
         if (CategoryId > 0)
         {
@@ -50,6 +50,7 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
 
         var query = _context.Product.AsQueryable();
 
+        query = query.Where(p => !p.IsDeleted && p.Status == 1); // Only include products that are not deleted and have been approved
         if (categoryIds != null && categoryIds.Any())
         {
             query = query.Where(p => categoryIds.Contains(p.CategoryId));
@@ -79,6 +80,7 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
             .OrderByDescending(p => p.CreatedAt)
             .AsQueryable();
 
+        query = query.Where(p => !p.IsDeleted && p.Status == 1); // Only include products that are not deleted and have been approved
         var totalItems = await query.CountAsync();
         var items = await query
             .Skip((validPageNumber - 1) * validPageSize)

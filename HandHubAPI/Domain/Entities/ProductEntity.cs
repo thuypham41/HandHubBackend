@@ -21,10 +21,10 @@ public class ProductEntity : BaseEntity
 
     [MaxLength(255)]
     public string ImageUrl { get; set; } = string.Empty;
-    public int Status { get; set; } // 0: chờ duyệt, 1: đã duyệt, 2: đã bán
+    public int Status { get; set; } // 0: chờ duyệt, 1: đã duyệt, 2: đã bán, -1: bị từ chối
 
     [ForeignKey("CategoryId")]
     public CategoryEntity? Category { get; set; }
     [ForeignKey("SellerId")]
-    public UserEntity? Seller{ get; set; }
+    public UserEntity? Seller { get; set; }
 }

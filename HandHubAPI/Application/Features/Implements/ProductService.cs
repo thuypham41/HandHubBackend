@@ -54,7 +54,48 @@ public class ProductService : IProductService
             _logger.LogError(ex, $"Error occurred while retrieving products by seller without order for seller ID {sellerId}.");
             throw;
         }
+
     }
+    public async Task<ProductDto> UpdateProductStatusAsync(int productId, int status)
+    {
+        try
+        {
+            var product = await _unitOfWork.ProductRepository.GetByIdAsync(productId);
+            if (product == null)
+            {
+                _logger.LogWarning($"Product with ID {productId} not found for status update.");
+                return new ProductDto();
+            }
+
+            product.Status = status;
+            product.UpdatedAt = DateTime.UtcNow;
+
+            _unitOfWork.ProductRepository.Update(product);
+            await _unitOfWork.CommitAsync();
+
+            _logger.LogInformation($"Product with ID {productId} status updated to {status}.");
+            return new ProductDto
+            {
+                Id = product.Id,
+                Name = product.Name,
+                Description = product.Description,
+                Price = product.Price,
+                CategoryId = product.CategoryId,
+                ImageUrl = product.ImageUrl,
+                CreatedAt = product.CreatedAt,
+                IsDeleted = product.IsDeleted,
+                SellerId = product.SellerId,
+                Status = product.Status
+            };
+        }
+        catch (Exception ex)
+        {
+            _unitOfWork.RollbackTransaction();
+            _logger.LogError(ex, $"Error occurred while updating status for product with ID {productId}.");
+            throw;
+        }
+    }
+
     public async Task<ProductDto> CreateProductAsync(CreateProductRequest request)
     {
         try
@@ -155,11 +196,11 @@ public class ProductService : IProductService
         }
     }
 
-    public async Task<PaginatedResponse<ProductDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 20, int categoryId = 0, string? searchTerm = null)
+    public async Task<PaginatedResponse<ProductDto>> GetAllProductsAsync(int pageNumber = 1, int pageSize = 20, int categoryId = 0, int status = 1, string? searchTerm = null)
     {
         try
         {
-            var products = await _unitOfWork.ProductRepository.GetPaginatedAsync(pageNumber, pageSize, categoryId, searchTerm);
+            var products = await _unitOfWork.ProductRepository.GetPaginatedAsync(pageNumber, pageSize, categoryId, status, searchTerm);
 
             var productDtos = products.Items.Select(product => new ProductDto
             {
