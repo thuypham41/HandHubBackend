@@ -1,6 +1,10 @@
 using System.Net;
 using HandHubAPI.Application.Features.Interfaces;
 using Microsoft.AspNetCore.Mvc;
+using VNPAY.NET;
+using VNPAY.NET.Enums;
+using VNPAY.NET.Models;
+using Newtonsoft.Json;
 namespace HandHubAPI.Controllers;
 
 [Route("api/[controller]")]
@@ -8,9 +12,28 @@ namespace HandHubAPI.Controllers;
 public class OrderController : BaseController<OrderController>
 {
     private readonly IOrderService _orderService;
-    public OrderController(IOrderService orderService, ILogger<OrderController> logger) : base(logger)
+    private readonly IVnpay _vnpay;
+    public OrderController(IOrderService orderService, ILogger<OrderController> logger, IConfiguration configuration) : base(logger)
     {
         _orderService = orderService;
+        _vnpay = new Vnpay();
+
+        var tmnCode = configuration["Vnpay:TmnCode"];
+        var hashSecret = configuration["Vnpay:HashSecret"];
+        var baseUrl = configuration["Vnpay:BaseUrl"];
+        var returnUrl = configuration["Vnpay:ReturnUrl"];
+
+        if (string.IsNullOrEmpty(tmnCode) || string.IsNullOrEmpty(hashSecret) || string.IsNullOrEmpty(baseUrl) || string.IsNullOrEmpty(returnUrl))
+        {
+            throw new InvalidOperationException("One or more VNPAY configuration values are missing.");
+        }
+
+        _vnpay.Initialize(
+            tmnCode,
+            hashSecret,
+            baseUrl,
+            returnUrl
+        );
     }
 
     // Request DTOs
@@ -232,5 +255,91 @@ public class OrderController : BaseController<OrderController>
         {
             return ErrorResponse("Failed to create order", HttpStatusCode.InternalServerError, ex);
         }
+    }
+
+    [HttpGet("CreatePaymentUrl")]
+    public ActionResult<string> CreatePaymentUrl(double moneyToPay, string description)
+    {
+        try
+        {
+            var ipAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
+                           ?? HttpContext.Connection.RemoteIpAddress?.ToString();
+
+            if (ipAddress == "::1")
+            {
+                ipAddress = "127.0.0.1";
+            }
+
+            var request = new PaymentRequest
+            {
+                Money = moneyToPay,
+                Description = description,
+                IpAddress = ipAddress,
+                BankCode = BankCode.ANY, // Tùy chọn. Mặc định là tất cả phương thức giao dịch
+                CreatedDate = DateTime.Now, // Tùy chọn. Mặc định là thời điểm hiện tại
+                Currency = Currency.VND, // Tùy chọn. Mặc định là VND (Việt Nam đồng)
+                TxnRef = 145679 // Set a unique transaction reference as a double
+            };
+            System.Console.WriteLine("diendk: " + JsonConvert.SerializeObject(request));
+            var paymentUrl = _vnpay.GetPaymentUrl(request);
+
+            return Created(paymentUrl, paymentUrl);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest(ex.Message);
+        }
+    }
+
+    [HttpGet("IpnAction")]
+    public IActionResult IpnAction()
+    {
+        if (Request.QueryString.HasValue)
+        {
+            try
+            {
+                var paymentResult = _vnpay.PaymentExecute(Request.Query);
+                if (paymentResult.IsSuccess)
+                {
+                    // Thực hiện hành động nếu thanh toán thành công tại đây. Ví dụ: Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu.
+                    return Ok();
+                }
+
+                // Thực hiện hành động nếu thanh toán thất bại tại đây. Ví dụ: Hủy đơn hàng.
+                return BadRequest("Thanh toán thất bại");
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        return NotFound("Không tìm thấy thông tin thanh toán.");
+    }
+
+    [HttpGet("Callback")]
+    public ActionResult<string> Callback()
+    {
+        if (Request.QueryString.HasValue)
+        {
+            try
+            {
+                var paymentResult = _vnpay.PaymentExecute(Request.Query);
+                var resultDescription = $"{paymentResult.OrderDescription}. {paymentResult.ResponseCode}.";
+
+                if (paymentResult.IsSuccess)
+                {
+                    return Ok(resultDescription);
+                }
+
+                return BadRequest(resultDescription);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        return NotFound("Không tìm thấy thông tin thanh toán.");
     }
 }

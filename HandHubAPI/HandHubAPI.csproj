@@ -30,5 +30,6 @@
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.8" />
 	  <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
 	  <PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.1.1" />
+    <PackageReference Include="VNPAY.NET" />
   </ItemGroup>
 </Project>

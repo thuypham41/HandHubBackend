@@ -13,6 +13,11 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddPresentation(builder.Configuration);
 builder.Services.AddControllers();
 
+builder.Configuration
+    .SetBasePath(Directory.GetCurrentDirectory())
+    .AddJsonFile("appsettings.json", optional: false, reloadOnChange: true)
+    .AddEnvironmentVariables();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAllOrigins",
