@@ -72,6 +72,14 @@ public class OrderController : BaseController<OrderController>
         public string Name { get; set; } = string.Empty;
     }
 
+    public class GetSoldOrdersInDateRangeResponse
+    {
+        public string UserName { get; set; } = string.Empty;
+        public int userId { get; set; }
+        public int TotalOrders { get; set; }
+        public decimal TotalRevenue { get; set; }
+        public decimal TotalSystemFee => TotalRevenue * 0.1m;
+    }
     public class CancelOrderRequest
     {
         public int OrderId { get; set; }
@@ -337,5 +345,33 @@ public class OrderController : BaseController<OrderController>
         }
 
         return NotFound("Không tìm thấy thông tin thanh toán.");
+    }
+
+    [HttpGet("get-all-revenue")]
+    public async Task<IActionResult> GetAllRevenue([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
+    {
+        try
+        {
+            var revenue = await _orderService.GetAllRevenueAsync(fromDate, toDate);
+            return CommonResponse(revenue, "Revenue retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve revenue", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpGet("get-orders-by-user-and-date")]
+    public async Task<IActionResult> GetSoldOrdersInDateRange([FromQuery] DateTime? fromDate, [FromQuery] DateTime? toDate)
+    {
+        try
+        {
+            var orders = await _orderService.GetSoldOrdersInDateRange(fromDate, toDate);
+            return CommonResponse(orders, "Orders retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve orders", HttpStatusCode.InternalServerError, ex);
+        }
     }
 }

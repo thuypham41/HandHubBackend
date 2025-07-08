@@ -14,5 +14,8 @@ namespace HandHubAPI.Application.Features.Interfaces
         Task<PaginatedResponse<OrderDetailDto?>> GetOrderDetailByIdAsync(int orderId);
         Task<OrderDto?> CancelOrderAsync(int orderId, string message);
         Task<OrderDto?> CreateOrderAsync(CreateOrderRequest orderDto);
+
+        Task<decimal> GetAllRevenueAsync(DateTime? startDate, DateTime? endDate);
+        Task<List<GetSoldOrdersInDateRangeResponse>> GetSoldOrdersInDateRange(DateTime? startDate, DateTime? endDate);
     }
 }

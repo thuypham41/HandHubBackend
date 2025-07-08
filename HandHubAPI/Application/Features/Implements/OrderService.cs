@@ -81,6 +81,44 @@ public class OrderService : IOrderService
             throw;
         }
     }
+    public async Task<List<GetSoldOrdersInDateRangeResponse>> GetSoldOrdersInDateRange(DateTime? startDate, DateTime? endDate)
+    {
+        try
+        {
+            var users = await _unitOfWork.OrderRepository.GetUsersWithSoldOrdersInDateRange(startDate, endDate);
+            List<GetSoldOrdersInDateRangeResponse> result = [];
+            foreach (var user in users)
+            {
+                result.Add(new GetSoldOrdersInDateRangeResponse
+                {
+                    UserName = user.FullName,
+                    userId = user.Id,
+                    TotalOrders = await _unitOfWork.OrderRepository.GetTotalOrdersByUser(user.Id, startDate, endDate),
+                    TotalRevenue = await _unitOfWork.OrderRepository.GetTotalRevenueByUser(user.Id, startDate, endDate),
+                });
+            }
+
+            return result;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while retrieving sold orders in date range.");
+            throw;
+        }
+    }
+
+    public async Task<decimal> GetAllRevenueAsync(DateTime? startDate, DateTime? endDate)
+    {
+        try
+        {
+            return await _unitOfWork.OrderRepository.GetTotalRevenueAsync(startDate, endDate);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error occurred while calculating revenue.");
+            throw;
+        }
+    }
 
     public async Task<OrderDto> CancelOrderAsync(int orderId, string reason)
     {
