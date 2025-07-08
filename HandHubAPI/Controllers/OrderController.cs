@@ -1,9 +1,10 @@
 using System.Net;
 using HandHubAPI.Application.Features.Interfaces;
+using HandHubAPI.Payment.Enums;
+using HandHubAPI.Payment.Interfaces;
+using HandHubAPI.Payment.Models;
+using HandHubAPI.Payment.Utilities;
 using Microsoft.AspNetCore.Mvc;
-using VNPAY.NET;
-using VNPAY.NET.Enums;
-using VNPAY.NET.Models;
 using Newtonsoft.Json;
 namespace HandHubAPI.Controllers;
 
@@ -262,23 +263,18 @@ public class OrderController : BaseController<OrderController>
     {
         try
         {
-            var ipAddress = HttpContext.Request.Headers["X-Forwarded-For"].FirstOrDefault()
-                           ?? HttpContext.Connection.RemoteIpAddress?.ToString();
-
-            if (ipAddress == "::1")
-            {
-                ipAddress = "127.0.0.1";
-            }
+            var ipAddress = NetworkHelper.GetIpAddress(HttpContext); // Lấy địa chỉ IP của thiết bị thực hiện giao dịch
 
             var request = new PaymentRequest
             {
+                PaymentId = DateTime.Now.Ticks,
                 Money = moneyToPay,
                 Description = description,
                 IpAddress = ipAddress,
                 BankCode = BankCode.ANY, // Tùy chọn. Mặc định là tất cả phương thức giao dịch
                 CreatedDate = DateTime.Now, // Tùy chọn. Mặc định là thời điểm hiện tại
                 Currency = Currency.VND, // Tùy chọn. Mặc định là VND (Việt Nam đồng)
-                TxnRef = 145679 // Set a unique transaction reference as a double
+                Language = DisplayLanguage.Vietnamese // Tùy chọn. Mặc định là tiếng Việt
             };
             System.Console.WriteLine("diendk: " + JsonConvert.SerializeObject(request));
             var paymentUrl = _vnpay.GetPaymentUrl(request);
@@ -298,7 +294,7 @@ public class OrderController : BaseController<OrderController>
         {
             try
             {
-                var paymentResult = _vnpay.PaymentExecute(Request.Query);
+                var paymentResult = _vnpay.GetPaymentResult(Request.Query);
                 if (paymentResult.IsSuccess)
                 {
                     // Thực hiện hành động nếu thanh toán thành công tại đây. Ví dụ: Cập nhật trạng thái đơn hàng trong cơ sở dữ liệu.
@@ -324,14 +320,14 @@ public class OrderController : BaseController<OrderController>
         {
             try
             {
-                var paymentResult = _vnpay.PaymentExecute(Request.Query);
-                var resultDescription = $"{paymentResult.OrderDescription}. {paymentResult.ResponseCode}.";
+                var paymentResult = _vnpay.GetPaymentResult(Request.Query);
+                var resultDescription = $"{paymentResult.PaymentResponse.Description}. {paymentResult.TransactionStatus.Description}.";
 
                 if (paymentResult.IsSuccess)
                 {
                     return Ok(resultDescription);
                 }
-
+                System.Console.WriteLine($"diendk: " + resultDescription);
                 return BadRequest(resultDescription);
             }
             catch (Exception ex)
