@@ -17,5 +17,6 @@ namespace HandHubAPI.Application.Features.Interfaces
 
         Task<decimal> GetAllRevenueAsync(DateTime? startDate, DateTime? endDate);
         Task<List<GetSoldOrdersInDateRangeResponse>> GetSoldOrdersInDateRange(DateTime? startDate, DateTime? endDate);
+        Task<List<TotalRevenueByWeekInMonthResponse>> GetTotalRevenueByWeekInMonth(int month, int year);
     }
 }

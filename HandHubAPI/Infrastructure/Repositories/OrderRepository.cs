@@ -161,4 +161,25 @@ public class OrderRepository : BaseRepository<OrderEntity>, IOrderRepository
 
         return result;
     }
+
+    public async Task<decimal> GetTotalRevenueByWeekInMonth(int month, int year, int week)
+    {
+        var firstDayOfMonth = new DateTime(year, month, 1);
+        var startOfWeek = firstDayOfMonth.AddDays((week - 1) * 7);
+        var endOfWeek = startOfWeek.AddDays(6);
+
+        // Ensure we don't go beyond the month boundaries
+        var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+        if (endOfWeek > lastDayOfMonth)
+        {
+            endOfWeek = lastDayOfMonth;
+        }
+
+        var result = await (from o in _context.Order
+                            where o.Status == 2
+                            where o.OrderDate >= startOfWeek && o.OrderDate <= endOfWeek
+                            select o.TotalMoney).SumAsync();
+
+        return result;
+    }
 }

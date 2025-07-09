@@ -252,6 +252,12 @@ public class OrderController : BaseController<OrderController>
         public int Price { get; set; }
     }
 
+    public class TotalRevenueByWeekInMonthResponse
+    {
+        public int Week { get; set; }
+        public decimal TotalRevenue { get; set; }
+    }
+
     [HttpPost("create-order")]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderRequest request)
     {
@@ -372,6 +378,20 @@ public class OrderController : BaseController<OrderController>
         catch (Exception ex)
         {
             return ErrorResponse("Failed to retrieve orders", HttpStatusCode.InternalServerError, ex);
+        }
+    }
+
+    [HttpGet("get-monthly-revenue")]
+    public async Task<IActionResult> GetTotalRevenueByWeekInMonth([FromQuery] int month, [FromQuery] int year)
+    {
+        try
+        {
+            var revenue = await _orderService.GetTotalRevenueByWeekInMonth(month, year);
+            return CommonResponse(revenue, "Monthly revenue retrieved successfully");
+        }
+        catch (Exception ex)
+        {
+            return ErrorResponse("Failed to retrieve monthly revenue", HttpStatusCode.InternalServerError, ex);
         }
     }
 }

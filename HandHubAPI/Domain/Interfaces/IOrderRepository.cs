@@ -14,4 +14,5 @@ public interface IOrderRepository : IBaseRepository<OrderEntity>
     Task<List<UserEntity>> GetUsersWithSoldOrdersInDateRange(DateTime? startDate, DateTime? endDate);
     Task<int> GetTotalOrdersByUser(int userId, DateTime? startDate, DateTime? endDate);
     Task<decimal> GetTotalRevenueByUser(int userId, DateTime? startDate, DateTime? endDate);
+    Task<decimal> GetTotalRevenueByWeekInMonth(int month, int year, int week);
 }

@@ -282,4 +282,30 @@ public class OrderService : IOrderService
             throw;
         }
     }
+
+    public async Task<List<TotalRevenueByWeekInMonthResponse>> GetTotalRevenueByWeekInMonth(int month, int year)
+    {
+        try
+        {
+            var weeklyRevenues = new List<TotalRevenueByWeekInMonthResponse>();
+
+            // Get revenue for each week (1-4) in the specified month
+            for (int week = 1; week <= 4; week++)
+            {
+                var weekRevenue = await _unitOfWork.OrderRepository.GetTotalRevenueByWeekInMonth(month, year, week);
+                weeklyRevenues.Add(new TotalRevenueByWeekInMonthResponse
+                {
+                    Week = week,
+                    TotalRevenue = weekRevenue
+                });
+            }
+
+            return weeklyRevenues;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, $"Error occurred while getting total revenue by week in month {month}/{year}");
+            throw;
+        }
+    }
 }
