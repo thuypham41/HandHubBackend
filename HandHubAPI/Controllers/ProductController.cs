@@ -363,7 +363,7 @@ public class ProductController : BaseController<ProductController>
                     request.AdminId,
                     updatedProduct.SellerId,
                     notificationMessage,
-                    "Đề xuất giá mới",
+                    notificationTitle,
                     null,
                     request.ProductId);
                 await _hubContext.Clients.User(sellerId.ToString()).SendAsync("ReceiveNotification", new
