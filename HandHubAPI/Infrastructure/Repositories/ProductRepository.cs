@@ -32,6 +32,8 @@ public class ProductRepository : BaseRepository<ProductEntity>, IProductReposito
         var items = await query
             .Skip((validPageNumber - 1) * validPageSize)
             .Take(validPageSize)
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.UpdatedAt)
             .ToListAsync();
 
         return new PaginatedResponse<ProductEntity>

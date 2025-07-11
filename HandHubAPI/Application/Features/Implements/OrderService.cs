@@ -60,6 +60,16 @@ public class OrderService : IOrderService
             }
 
             await CartService.ClearAllCartbyUserIdAsync(request.CustomerId);
+            foreach (var item in request.Items)
+            {
+                var product = await _unitOfWork.ProductRepository.GetByIdAsync(item.ProductId);
+                if (product != null)
+                {
+                    product.Status = 2;
+                    _unitOfWork.ProductRepository.Update(product);
+                }
+            }
+
             await _unitOfWork.CommitAsync();
 
             _logger.LogInformation($"Order created successfully with ID: {orderAdded.Id}");

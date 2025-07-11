@@ -13,13 +13,13 @@ public class CartItemRepository : BaseRepository<CartItemEntity>, ICartItemRepos
     public async Task<CartItemEntity?> GetByCartAndProductIdAsync(int cartId, int productId)
     {
         return await _context.Set<CartItemEntity>()
-            .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
+            .FirstOrDefaultAsync(ci => ci.CartId == cartId && ci.ProductId == productId && !ci.IsDeleted);
     }
 
     public async Task<bool> ExistsByCartAndProductIdAsync(int cartId, int productId)
     {
         return await _context.Set<CartItemEntity>()
-            .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId);
+            .AnyAsync(ci => ci.CartId == cartId && ci.ProductId == productId && !ci.IsDeleted);
     }
     public async Task<IEnumerable<CartItemEntity>> GetByCartIdAsync(int cartId, int userId = 0)
     {
